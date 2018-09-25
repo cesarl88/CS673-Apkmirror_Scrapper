@@ -106,7 +106,7 @@ if __name__ == '__main__':
 	if Start_SearchPages < 1:
 		Start_SearchPages = 1
 
-	if SearchPages < Start_SearchPages:
+	if SearchPages <= Start_SearchPages:
 		SearchPages = Start_SearchPages + 1
 	
 	#CSV Headers

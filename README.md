@@ -13,10 +13,11 @@ Folder Structure
 
 
 
-<b>python ./DownloadSearchHtmlContent.py '/Art & Design/Canvas/Html/' Canvas 3</b>
+<b>python ./DownloadSearchHtmlContent.py '/Art & Design/Canvas/Html/' Canvas 1 3</b>
 
 '/Art & Design/Canvas/Html/' is where the SearchPages are stored and where the final output will be saved.
 Canvas is the name of the app
+1 is the starting page
 3 is the number of search pages
 
 It will analyse all the search pages and create a csv with the apk download link, date and release name
