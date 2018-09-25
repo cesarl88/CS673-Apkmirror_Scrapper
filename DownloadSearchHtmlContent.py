@@ -10,7 +10,7 @@ import time
 #Retrieves html content from apkmirror
 def get_html_content(url, path):
 	
-	time.sleep(2) #delay for 5 seconds
+	time.sleep(5) #delay for 5 seconds
 	#url = "https://www.apkmirror.com/apk/samsung-electronics-co-ltd/artcanvas/artcanvas-1-0-41-release/artcanvas-draw-paint-1-0-41-android-apk-download/"
 	print 'URL: ' + url
 	print 'path: ' + path
@@ -32,7 +32,7 @@ def get_html_content(url, path):
 
 	response = requests.request("GET", url, headers=headers)
 
-	#print brotli.decompress(response.content)
+	#print response.content
 	#print response.status
 	return brotli.decompress(response.content)
 
@@ -88,6 +88,7 @@ if __name__ == '__main__':
 	#Expected Parameters
 	# 1. '/Art & Design/Canvas/Html/' -->App Base Drectory
 	# 2. Canvas  --> App Name
+	# 3. 1 --> Number of Start Search Pages 
 	# 3. 2 --> Number of Search Pages eg Searh_Page1.html, Search_Page2.html....Search_Pagen.html
 
 
@@ -100,12 +101,19 @@ if __name__ == '__main__':
 	Directory = sys.argv[1]
 	AppName =  sys.argv[2]
 	SearchPages = int(sys.argv[3])
+	Start_SearchPages = int(sys.argv[4])
+
+	if Start_SearchPages < 1:
+		Start_SearchPages = 1
+
+	if SearchPages < Start_SearchPages:
+		SearchPages = Start_SearchPages + 1
 	
 	#CSV Headers
 	csv_content = 'App Version, Date,  Details URL, Download URl, APK Info\n'
 
 	# Looping in all search pages
-	for i in range(1,SearchPages + 1):
+	for Start_SearchPages in range(1,SearchPages + 1):
 		
 		htmlFileName = fileDir + Directory + 'Search_Page'+ `i` +'.html'
 		HtmlFile = open(htmlFileName, "r")
