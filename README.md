@@ -27,4 +27,12 @@ It will analyse all the search pages and create a csv with the apk download link
 
 <b>python ./RetrieveSearchPages.py  Canvas</b>
 
-It will download the html content of all the search pages for Canvas which will be the word used to do the search in APK Mirrir
+It will download the html content of all the search pages for Canvas which will be the word used to do the search in APK Mirror
+
+<h1>DownlaodApk.py Usage</h1>
+
+<b>python ./DownlaodApk.py  Canvas_Description.csv</b>
+
+It receives the csv file to analyze and starts downloading each APK. It uses the name from the CSV. All the APK will be downloaded on your current directory.
+
+There is a gap of 10 seconds between each download.
