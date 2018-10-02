@@ -115,7 +115,7 @@ if __name__ == '__main__':
 	# Looping in all search pages
 	for Start_SearchPages in range(1,SearchPages + 1):
 		
-		htmlFileName = fileDir + Directory + 'Search_Page'+ 'i' +'.html'
+		htmlFileName = fileDir + Directory + 'Search_Page'+ str(Start_SearchPages) +'.html'
 		HtmlFile = open(htmlFileName, "r")
 		HtmlContent = HtmlFile.read()
 
