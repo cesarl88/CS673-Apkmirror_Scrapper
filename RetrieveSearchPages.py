@@ -4,11 +4,15 @@ import sys
 import os
 import bs4
 from bs4 import BeautifulSoup
+import time
 
 def read_search(page, app_name):
+
     print 'Downloading Page ' + str(page) 
     url = "https://www.apkmirror.com/"
 
+    time.sleep(10) #delay for 10 seconds
+    
     querystring = {"post_type":"app_release","searchtype":"apk","s":app_name}
     path = "/?post_type=app_release&searchtype=apk&s=" + app_name
     if page > 1:
