@@ -100,8 +100,8 @@ if __name__ == '__main__':
 	#################################################################################
 	Directory = sys.argv[1]
 	AppName =  sys.argv[2]
-	SearchPages = int(sys.argv[3])
-	Start_SearchPages = int(sys.argv[4])
+	SearchPages = int(sys.argv[4])
+	Start_SearchPages = int(sys.argv[3])
 
 	if Start_SearchPages < 1:
 		Start_SearchPages = 1
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 	# Looping in all search pages
 	for Start_SearchPages in range(1,SearchPages + 1):
 		
-		htmlFileName = fileDir + Directory + 'Search_Page'+ `i` +'.html'
+		htmlFileName = fileDir + Directory + 'Search_Page'+ 'i' +'.html'
 		HtmlFile = open(htmlFileName, "r")
 		HtmlContent = HtmlFile.read()
 
