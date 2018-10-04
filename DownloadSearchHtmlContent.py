@@ -55,7 +55,7 @@ def analize_apk_description(description_html, version_dir):
 				if type(det)  is not bs4.element.NavigableString and det['class'][0] == 'appspec-value':
 						if det.string:
 							apk_details_str += det.string + ' '
-						elif det.div:
+						elif det.div and det.div.string:
 							apk_details_str += det.div.string + ' '
 						else:
 							for d in det.contents:
