@@ -341,10 +341,19 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 							if type(it) is not bs4.element.NavigableString and it.string == "Download":
 								# Here needs to loop for variants if needed
 								# Downloading Variant HTML
-								download_url =  v_widget.contents[5].contents[1].contents[3].contents[1].a.get("href").strip()
+								
+								if len(v_widget.contents[5].contents[1].contents) < 4:
+									print("Got u")
+									print v_widget.contents[9]#.contents[1].contents[3].contents[1].a.get("href").strip()
+									download_url =  v_widget.contents[9].contents[1].contents[3].contents[1].a.get("href").strip()
+
+								else:
+									download_url =  v_widget.contents[5].contents[1].contents[3].contents[1].a.get("href").strip()
+								
 								download_url = apk_Mirror_url + download_url
 								apk_html = get_html_content(download_url, download_url)	
 								apk_details_str += "," + analize_apk_description(apk_html,  app_dir)
+								
 								
 								#Temp Reading from File for testing
 								#tempFile = fileDir + sys.argv[1] + "/Test_release.html"
