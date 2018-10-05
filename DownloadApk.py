@@ -49,7 +49,7 @@ def download_apk(app_name, url):
 		f.write(download_page.content)
 
 
-	time.sleep(10) #delay for 10 seconds
+	time.sleep(2) #delay for 10 seconds
 
 
 if __name__ == '__main__':

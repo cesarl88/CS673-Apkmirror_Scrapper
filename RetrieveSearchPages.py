@@ -11,8 +11,8 @@ def read_search(page, app_name):
     print 'Downloading Page ' + str(page) 
     url = "https://www.apkmirror.com/"
 
-    time.sleep(10) #delay for 10 seconds
-    
+    time.sleep(5) #delay for 10 seconds
+
     querystring = {"post_type":"app_release","searchtype":"apk","s":app_name}
     path = "/?post_type=app_release&searchtype=apk&s=" + app_name
     if page > 1:
@@ -39,14 +39,7 @@ def read_search(page, app_name):
     
     content = brotli.decompress(response.content)
     
-    print  'Page downloaded' + str(page)
-
-    fileDir = os.path.dirname(os.path.abspath(__file__)) 
-    htmlFileName = fileDir + '/Search_Page'+str(page)+'.html'
-    f= open(htmlFileName,"w+")
-    f.write(content);
-    f.close()
-
+    
     return content
 
 def readNext(page, app_name):
@@ -56,13 +49,24 @@ def readNext(page, app_name):
 
     pagination = soup.find('div', attrs={'class': 'pagination desktop'})
 
-    print 'Content: ' + pagination.contents[2].string
-    print 'Page: ' + str(page)
-    
-    if pagination.contents[2].string == 'Next >':
-        readNext(page + 1, app_name)
-    elif len(pagination.contents) > 4 and pagination.contents[4].string and pagination.contents[4].string == 'Next >':
-        readNext(page + 1, app_name)
+    if pagination:
+
+        print  'Page Saved' + str(page)
+        fileDir = os.path.dirname(os.path.abspath(__file__)) 
+        htmlFileName = fileDir + '/Search_Page'+str(page)+'_ ' + app_name +'.html'
+        f= open(htmlFileName,"w+")
+        f.write(html_content);
+        f.close()
+
+        print 'Content: ' + pagination.contents[2].string
+        print 'Page: ' + str(page)
+        
+        if pagination.contents[2].string == 'Next >':
+            readNext(page + 1, app_name)
+        elif len(pagination.contents) > 4 and pagination.contents[4].string and pagination.contents[4].string == 'Next >':
+            readNext(page + 1, app_name)
+        else:
+            print 'eop'
     else:
         print 'eop'
 
