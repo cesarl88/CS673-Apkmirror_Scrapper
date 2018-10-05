@@ -108,10 +108,10 @@ def readNext(page, app_name, category):
 		pagination = soup.find("div", attrs={"class": "pagination desktop"})
 		
 		fileDir = os.path.dirname(os.path.abspath(__file__)) 
-		dirName = fileDir + "/" + category + "/" + app_name + "/"
+		dirName = fileDir + "/" + category + "/" + app_name.replace(":","")  + "/"
 		
 		
-		htmlFileName = dirName + "/Search_Page"+str(page)+"_ " + app_name +".html"
+		htmlFileName = dirName + "/Search_Page"+str(page)+"_ " + app_name.replace(":","")  +".html"
  		f= open(htmlFileName,"w+")
 		f.write(html_content);
 		f.close()
@@ -194,7 +194,7 @@ def analize_apk_description(description_html, version_dir):
 								elif d.string:
 									apk_details_str += d.string + " "
 
-	apk_details_str = apk_details_str.replace("\n", " ")
+	apk_details_str = apk_details_str.replace("\n", " ").encode("utf-8")
 	#Saving info in a separate file
 	f = open(version_dir + ".txt","w+")
 	f.write(apk_details_str);
@@ -225,7 +225,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	#	    - AppName eg. Canvas													#
 	#		- Html : Added becuase I had something else in mind, so i just left it  #
 	#################################################################################
-	Directory = "/" + AppName + "/"
+	Directory = "/" + AppName.replace(":","")  
 
 	#SearchPages = int(sys.argv[4])
 	#Start_SearchPages = int(sys.argv[3])
@@ -241,13 +241,15 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 
 	urls = []
 	today = datetime.now()
-	OldDate = today + relativedelta(months= +2)
-	AppNumbers = 0
+	#OldDate = today + relativedelta(months= +2)
+	AppNumbers = {}
+	Dates = {}
+	difference_in_months = 2
 
 	# Looping in all search pages
 	for Start_SearchPages in range(1,SearchPages + 1):
 		
-		htmlFileName = dirName + Directory + "Search_Page"+str(Start_SearchPages) +"_ " + AppName +".html"
+		htmlFileName = dirName + Directory + "/Search_Page"+str(Start_SearchPages) +"_ " + AppName.replace(",","") +".html"
 
 		if not os.path.exists(htmlFileName):
 			print("Search not found")
@@ -265,31 +267,46 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 		for widget in list_widget.contents:
 			if type(widget)  is not bs4.element.NavigableString and widget["class"][0] == "appRow":
 				
+				#Getting Dev
+				byDev = widget.find("a", attrs={"class": "byDeveloper"}).string
+
+				if not byDev in AppNumbers:
+					AppNumbers[byDev] = 0
+				
+					
+
+
+
 				#Getting Date
 				Date =  widget.div.contents[3].span.span.string	
 				print("################")
 				print("Date: " + Date)
+
 				appDate = datetime.strptime(Date, "%B %d, %Y")
-
 				Date = Date.replace(",", " ")
-
 				date_diff = relativedelta(today, appDate)
 
 				print("Dates Difference: Years(" + str(date_diff.years) + "), Months(" +str(date_diff.months)+")")
 
-				if date_diff.years >= 2 and date_diff.months >= 1  and AppNumbers >= 12:
-					print("Information collected for 2 years stopping process")
-					break
+				if date_diff.years >= 2 and date_diff.months >= 1:
+					isdone = False
+					for key, value in AppNumbers.items():
+						isdone = value >= 12
 
+					if isdone:
+						print("Information collected for 2 years stopping process")
+						break
 
-				difference_in_months = relativedelta(OldDate, appDate).months
-				print("Months Difference: " + str(difference_in_months))
+				if byDev in Dates:
+					difference_in_months = relativedelta(Dates[byDev], appDate).months
+					print("Months Difference: " + str(difference_in_months))
 
 				if(difference_in_months < 2):
 					print("Less than 2 months ignoring")
 					continue
 
-				OldDate = appDate
+				Dates[byDev] = appDate
+#				OldDate = appDate
 				#Getting Variants APK URL
 				url_1 = widget.div.contents[7].contents[1].contents[3].a.get("href")
 				url_variants = apk_Mirror_url + url_1	
@@ -314,7 +331,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				#variant_html_page = variant_html_file.read()
 
 				apk_details_str = " "
-
+				download_url = ""
 
 				soup_variants = BeautifulSoup(variant_html_page, "html.parser")
 				v_list_widget = soup_variants.find_all("div", attrs={"class": "listWidget"})
@@ -335,21 +352,27 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 								#apk_html = detail_html_file.read()
 								#apk_details_str += "," + analize_apk_description(apk_html,  app_dir + "_" + Name)
 
-				#print download_url
-				
-				download_url = download_url.replace("//", "/")	
+				download = ""
+				if download_url == "":
+					print("Not Variants")
+					download_url = url_variants
+					download = url_variants
+					apk_details_str += "," + analize_apk_description(variant_html_page,  app_dir)
+				else:
+					download = download_url + "download"
 
-				print("App url Description : " + download_url)
-				
-				csv_content += Name + ", " + Date +"," +  download_url +","+ download_url + "download," + apk_details_str + "\n"
+				download_url = download_url.replace("//", "/")	
+				download = download.replace("//", "/")	
+
+				csv_content += Name + ", " + Date +"," +  download_url +","+ download + "," + apk_details_str.decode("utf-8") + '\n'
 				urls.append(download_url + "download")
-				AppNumbers += 1 
-				print("Number of versions so far: " + str(AppNumbers))
+				AppNumbers[byDev] += 1
+				print("Number of versions "+ byDev + " so far: " + str(AppNumbers[byDev]))
 
 	#Saving CSV Content
 
-	f = open(dirName + Directory + AppName  + "_Description.csv","w+")
-	f.write(csv_content)
+	f = open(dirName + Directory + "/" + AppName.replace(":","")  + "_Description.csv","w+")
+	f.write(csv_content.encode("utf-8"))
 	f.close()
 
 	#for link in urls:
@@ -395,11 +418,11 @@ def download_apk(Path, app_name, url):
 	else:
 		download_page = requests.get(url)
 		
-	with open(Path + app_name + ".apk","wb") as f:
+	with open(Path + "/" + app_name + ".apk","wb") as f:
 		f.write(download_page.content)
 
 
-	time.sleep(2) #delay for 10 seconds
+	time.sleep(5) #delay for 10 seconds
 
 #main
 
@@ -452,7 +475,7 @@ if __name__ == "__main__":
 	search_pages = 1
 	for app in Apps:
 
-		Directory = "/" + app + "/"
+		Directory = "/" + app.replace(":","") 
 		print("Checking if exist " + dirName + Directory)
 		if not os.path.exists(dirName + Directory):
 			os.mkdir(dirName + Directory )
@@ -460,27 +483,29 @@ if __name__ == "__main__":
 		
 		print("App Search: " + app)
 
-		if not os.path.exists(dirName + Directory + "SearchDone"):
+		if not os.path.exists(dirName + Directory + "/SearchDone"):
 			search_pages = readNext(1, app, AppName)
 			print("Search Pages: " + str(search_pages))
-			f = open(dirName + Directory + "SearchDone","w+")
+			f = open(dirName + Directory + "/SearchDone","w+")
 			f.write(str(search_pages));
 			f.close()
 		else:
-			File = open(dirName + Directory + "SearchDone", "r")
+			File = open(dirName + Directory + "/SearchDone", "r")
 			search_pages = int(File.read())
 			print("Search pages " + str(search_pages))	
 
-		if not os.path.exists(dirName + Directory + "SearchProcessDone"):
+		app = app.replace(":", "")
+
+		if not os.path.exists(dirName + Directory + "/SearchProcessDone"):
 			ProcessSearchPages(app,AppName, 1, search_pages)
-			f = open(dirName + Directory + "SearchProcessDone","w+")
+			f = open(dirName + Directory + "/SearchProcessDone","w+")
 			f.write("Done")
 			f.close()
 		else:
 			print("Search Analysis Done. Skiping")
 
-		if not os.path.exists(dirName + Directory + "DownloadProcessDone"):
-			FilePath = dirName + Directory + app  + "_Description.csv"
+		if not os.path.exists(dirName + Directory + "/DownloadProcessDone"):
+			FilePath = dirName + Directory + "/" + app.replace(",","")  + "_Description.csv"
 			with open(FilePath) as csv_file:
 					print "Csv Found"
 					csv_reader = csv.reader(csv_file, delimiter = ",")
@@ -491,7 +516,7 @@ if __name__ == "__main__":
 						else:
 							download_apk(dirName + Directory, row[0], row[3])
 
-			f = open(dirName + Directory + "DownloadProcessDone","w+")
+			f = open(dirName + Directory + "/DownloadProcessDone","w+")
 			f.write("Done")
 			f.close()
 		else:
