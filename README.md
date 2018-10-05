@@ -36,3 +36,21 @@ It will download the html content of all the search pages for Canvas which will 
 It receives the csv file to analyze and starts downloading each APK. It uses the name from the CSV. All the APK will be downloaded on your current directory.
 
 There is a gap of 10 seconds between each download.
+
+
+<h1>GetCategoryAppsList.py Usage</h1>
+<b>python ./GetCategoryAppsList.py  "PRODUCTIVITY" 4</b>
+
+"PRODUCTIVITY" is the Category that you will look for in Google Play Store
+4 is the number of times I will refresh the google play search list. 
+   - 1 to get 60 apps
+   - 2 to get 120 apps
+   - 3 to get 180
+   - 4 to get 240
+   and so on
+
+This script will create a folder for the category and a folder per app.
+   
+
+
+
