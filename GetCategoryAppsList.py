@@ -107,12 +107,14 @@ def readNext(page, app_name, category):
 		print("eop")
 	else:
 		pagination = soup.find("div", attrs={"class": "pagination desktop"})
-		
+		app = app_name.replace(":","").replace("'", "").replace(",", "").replace(".", "")
+				
+
 		fileDir = os.path.dirname(os.path.abspath(__file__)) 
-		dirName = fileDir + "/" + category + "/" + app_name.replace(":","")  + "/"
+		dirName = fileDir + "/" + category + "/" + app  + "/"
 		
 		
-		htmlFileName = dirName + "/Search_Page"+str(page)+"_ " + app_name.replace(":","").replace(",", "")  +".html"
+		htmlFileName = dirName + "/Search_Page"+str(page)+"_ " + app  +".html"
 		f= open(htmlFileName,"w+")
 		f.write(html_content);
 		f.close()
@@ -226,7 +228,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	#	    - AppName eg. Canvas													#
 	#		- Html : Added becuase I had something else in mind, so i just left it  #
 	#################################################################################
-	Directory = "/" + AppName.replace(":","").replace(",","")  
+	Directory = "/" + AppName.replace(":","").replace(",","").replace("'","").replace("'","").replace(".","") 
 
 	#SearchPages = int(sys.argv[4])
 	#Start_SearchPages = int(sys.argv[3])
@@ -250,7 +252,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	# Looping in all search pages
 	for Start_SearchPages in range(1,SearchPages + 1):
 		
-		htmlFileName = dirName + Directory + "/Search_Page"+str(Start_SearchPages) +"_ " + AppName.replace(",","") +".html"
+		htmlFileName = dirName + Directory + "/Search_Page"+str(Start_SearchPages) +"_ " + AppName.replace(",","").replace("'","").replace(".","") +".html"
 
 		if not os.path.exists(htmlFileName):
 			print("Search not found")
@@ -490,7 +492,7 @@ if __name__ == "__main__":
 	search_pages = 1
 	for app in Apps:
 
-		Directory = "/" + app.replace(":","").replace(",", "")
+		Directory = "/" + app.replace(":","").replace(",", "").replace("'","").replace(".","")
 		print("Checking if exist " + dirName + Directory)
 		if not os.path.exists(dirName + Directory):
 			os.mkdir(dirName + Directory )
@@ -510,7 +512,8 @@ if __name__ == "__main__":
 			print("Search pages " + str(search_pages))	
 
 		app = app.replace(":", "")
-		app = app.replace(",", "")
+		app = app.replace(",", "").replace("'","").replace(".","")
+
 
 		if not os.path.exists(dirName + Directory + "/SearchProcessDone"):
 			ProcessSearchPages(app,AppName, 1, search_pages)
@@ -521,7 +524,7 @@ if __name__ == "__main__":
 			print("Search Analysis Done. Skiping")
 
 		if not os.path.exists(dirName + Directory + "/DownloadProcessDone"):
-			FilePath = dirName + Directory + "/" + app.replace(",","")  + "_Description.csv"
+			FilePath = dirName + Directory + "/" + app.replace(",","").replace("'","").replace(".","")  + "_Description.csv"
 			with open(FilePath) as csv_file:
 					print("Csv Found")
 					csv_reader = csv.reader(csv_file, delimiter = ",")
