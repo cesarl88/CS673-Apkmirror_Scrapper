@@ -112,7 +112,7 @@ def readNext(page, app_name, category):
 		dirName = fileDir + "/" + category + "/" + app_name.replace(":","")  + "/"
 		
 		
-		htmlFileName = dirName + "/Search_Page"+str(page)+"_ " + app_name.replace(":","")  +".html"
+		htmlFileName = dirName + "/Search_Page"+str(page)+"_ " + app_name.replace(":","").replace(",", "")  +".html"
 		f= open(htmlFileName,"w+")
 		f.write(html_content);
 		f.close()
@@ -226,7 +226,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	#	    - AppName eg. Canvas													#
 	#		- Html : Added becuase I had something else in mind, so i just left it  #
 	#################################################################################
-	Directory = "/" + AppName.replace(":","")  
+	Directory = "/" + AppName.replace(":","").replace(",","")  
 
 	#SearchPages = int(sys.argv[4])
 	#Start_SearchPages = int(sys.argv[3])
