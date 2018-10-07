@@ -103,7 +103,7 @@ def readNext(page, app_name, category):
 	list_widget = soup.find("div", attrs={"class": "listWidget"})
 	#print list_widget
 	padding = list_widget.find("div", attrs={"class": "addpadding"})
-	if padding:
+	if padding or page >= 20:
 		print("eop")
 	else:
 		pagination = soup.find("div", attrs={"class": "pagination desktop"})
