@@ -510,6 +510,7 @@ if __name__ == "__main__":
 			print("Search pages " + str(search_pages))	
 
 		app = app.replace(":", "")
+		app = app.replace(",", "")
 
 		if not os.path.exists(dirName + Directory + "/SearchProcessDone"):
 			ProcessSearchPages(app,AppName, 1, search_pages)
