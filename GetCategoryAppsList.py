@@ -291,10 +291,10 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 
 				print("Dates Difference: Years(" + str(date_diff.years) + "), Months(" +str(date_diff.months)+")")
 
-				if date_diff.years >= 2 and date_diff.months >= 1:
+				if date_diff.years >= 2 and date_diff.months >= 6:
 					isdone = False
 					for key, value in AppNumbers.items():
-						isdone = value >= 12
+						isdone = value >= 15
 
 					if isdone:
 						print("Information collected for 2 years stopping process")
