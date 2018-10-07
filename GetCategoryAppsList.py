@@ -107,7 +107,7 @@ def readNext(page, app_name, category):
 		print("eop")
 	else:
 		pagination = soup.find("div", attrs={"class": "pagination desktop"})
-		app = app_name.replace(":","").replace("'", "").replace(",", "").replace(".", "")
+		app = app_name.replace(":","").replace("'", "").replace(",", "").replace(".", "").replace("/","")
 				
 
 		fileDir = os.path.dirname(os.path.abspath(__file__)) 
@@ -228,7 +228,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	#	    - AppName eg. Canvas													#
 	#		- Html : Added becuase I had something else in mind, so i just left it  #
 	#################################################################################
-	Directory = "/" + AppName.replace(":","").replace(",","").replace("'","").replace("'","").replace(".","") 
+	Directory = "/" + AppName.replace(":","").replace(",","").replace("'","").replace("'","").replace(".","").replace("/","") 
 
 	#SearchPages = int(sys.argv[4])
 	#Start_SearchPages = int(sys.argv[3])
@@ -252,7 +252,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	# Looping in all search pages
 	for Start_SearchPages in range(1,SearchPages + 1):
 		
-		htmlFileName = dirName + Directory + "/Search_Page"+str(Start_SearchPages) +"_ " + AppName.replace(",","").replace("'","").replace(".","") +".html"
+		htmlFileName = dirName + Directory + "/Search_Page"+str(Start_SearchPages) +"_ " + AppName.replace(",","").replace("'","").replace(".","").replace("/","") +".html"
 
 		if not os.path.exists(htmlFileName):
 			print("Search not found")
@@ -492,7 +492,7 @@ if __name__ == "__main__":
 	search_pages = 1
 	for app in Apps:
 
-		Directory = "/" + app.replace(":","").replace(",", "").replace("'","").replace(".","")
+		Directory = "/" + app.replace(":","").replace(",", "").replace("'","").replace(".","").replace("/","")
 		print("Checking if exist " + dirName + Directory)
 		if not os.path.exists(dirName + Directory):
 			os.mkdir(dirName + Directory )
@@ -512,7 +512,7 @@ if __name__ == "__main__":
 			print("Search pages " + str(search_pages))	
 
 		app = app.replace(":", "")
-		app = app.replace(",", "").replace("'","").replace(".","")
+		app = app.replace(",", "").replace("'","").replace(".","").replace("/","")
 
 
 		if not os.path.exists(dirName + Directory + "/SearchProcessDone"):
