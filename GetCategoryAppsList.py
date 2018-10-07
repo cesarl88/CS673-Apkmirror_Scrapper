@@ -8,6 +8,7 @@ import csv
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from bs4 import BeautifulSoup
+import _brotli
 
 
 def getCategoryAppList(Category, pages):
@@ -61,7 +62,7 @@ def read_search(page, app_name):
     print("Downloading Page " + str(page))
     url = "https://www.apkmirror.com/"
 
-    time.sleep(5) #delay for 10 seconds
+    time.sleep(8) #delay for 10 seconds
 
     querystring = {"post_type":"app_release","searchtype":"apk","s":app_name}
     path = "/?post_type=app_release&searchtype=apk&s=" + app_name
@@ -112,7 +113,7 @@ def readNext(page, app_name, category):
 		
 		
 		htmlFileName = dirName + "/Search_Page"+str(page)+"_ " + app_name.replace(":","")  +".html"
- 		f= open(htmlFileName,"w+")
+		f= open(htmlFileName,"w+")
 		f.write(html_content);
 		f.close()
 
@@ -140,7 +141,7 @@ def readNext(page, app_name, category):
 #Retrieves html content from apkmirror
 def get_html_content(url, path):
 	
-	time.sleep(5) #delay for 5 seconds
+	time.sleep(8) #delay for 5 seconds
 	#url = "https://www.apkmirror.com/apk/samsung-electronics-co-ltd/artcanvas/artcanvas-1-0-41-release/artcanvas-draw-paint-1-0-41-android-apk-download/"
 	print("URL: " + url)
 	print("path: " + path)
@@ -322,7 +323,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				print("App Name : " + Name)
 				print("App url variants : " + url_variants)
 
-				app_dir = fileDir + sys.argv[1] + AppName
+				app_dir = dirName + Directory + "/" + AppName.replace(":","")
 				
 				# Downloading Variants HTML
 				variant_html_page = get_html_content(url_variants, url_1)
@@ -343,8 +344,8 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 								# Downloading Variant HTML
 								
 								if len(v_widget.contents[5].contents[1].contents) < 4:
-									print("Got u")
-									print v_widget.contents[9]#.contents[1].contents[3].contents[1].a.get("href").strip()
+									#print("Got u")
+									#print(v_widget.contents[9]#.contents[1].contents[3].contents[1].a.get("href").strip()
 									download_url =  v_widget.contents[9].contents[1].contents[3].contents[1].a.get("href").strip()
 
 								else:
@@ -431,11 +432,16 @@ def download_apk(Path, app_name, url):
 		f.write(download_page.content)
 
 
-	time.sleep(5) #delay for 10 seconds
+	time.sleep(8) #delay for 10 seconds
 
 #main
 
 if __name__ == "__main__":
+
+	print(bs4.__file__)
+	print(_brotli.__file__)
+	#print(bs4.__file__)
+	#from .builder import builder_registry, ParserRejectedMarkup
 
 
 	#Current Directory
@@ -516,7 +522,7 @@ if __name__ == "__main__":
 		if not os.path.exists(dirName + Directory + "/DownloadProcessDone"):
 			FilePath = dirName + Directory + "/" + app.replace(",","")  + "_Description.csv"
 			with open(FilePath) as csv_file:
-					print "Csv Found"
+					print("Csv Found")
 					csv_reader = csv.reader(csv_file, delimiter = ",")
 					line_count = 0
 					for row in csv_reader:
