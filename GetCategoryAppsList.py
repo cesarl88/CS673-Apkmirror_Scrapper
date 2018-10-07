@@ -381,7 +381,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 
 	#Saving CSV Content
 
-	f = open(dirName + Directory + "/" + AppName.replace(":","")  + "_Description.csv","w+")
+	f = open(dirName + Directory + "/" + AppName.replace(":","").replace(",", "")  + "_Description.csv","w+")
 	f.write(csv_content.encode("utf-8"))
 	f.close()
 
@@ -438,7 +438,7 @@ def download_apk(Path, app_name, url):
 
 if __name__ == "__main__":
 
-	print(bs4.__file__)
+	#print(bs4.__file__)
 	print(_brotli.__file__)
 	#print(bs4.__file__)
 	#from .builder import builder_registry, ParserRejectedMarkup
@@ -490,7 +490,7 @@ if __name__ == "__main__":
 	search_pages = 1
 	for app in Apps:
 
-		Directory = "/" + app.replace(":","") 
+		Directory = "/" + app.replace(":","").replace(",", "")
 		print("Checking if exist " + dirName + Directory)
 		if not os.path.exists(dirName + Directory):
 			os.mkdir(dirName + Directory )
