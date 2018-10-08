@@ -27,6 +27,11 @@ if __name__ == '__main__':
 
 
 				if len(apks) >= 12:
+
+					for apk in apks:
+						print("about to run apkID")
+						os.system("apkid " + apk)
+
 					NumberOfApps+= 1
 					app = app.replace(" ", "\ ")
 					newpath = "./_ValidApps/" + cat + "/" + app + "/"

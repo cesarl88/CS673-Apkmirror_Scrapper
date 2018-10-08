@@ -243,7 +243,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	csv_content = "App Version, Date,  Details URL, Download URl, APK Info\n"
 
 	urls = []
-	today = datetime.now()
+	today = datetime.strptime("January 1, 2016", "%B %d, %Y")#datetime.now()
 	#OldDate = today + relativedelta(months= +2)
 	AppNumbers = {}
 	Dates = {}
