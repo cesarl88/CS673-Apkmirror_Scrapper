@@ -346,9 +346,15 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 								# Downloading Variant HTML
 								
 								if len(v_widget.contents[5].contents[1].contents) < 4:
-									#print("Got u")
-									#print(v_widget.contents[9]#.contents[1].contents[3].contents[1].a.get("href").strip()
-									download_url =  v_widget.contents[9].contents[1].contents[3].contents[1].a.get("href").strip()
+									print("Got u")
+									print(len(v_widget.contents))
+
+									if len(v_widget.contents) == 9:
+										#print(v_widget.contents[7])#.contents[1].contents[3].contents[1].a.get("href").strip()
+										download_url =  v_widget.contents[7].contents[1].contents[3].contents[1].a.get("href").strip()
+									
+									else:
+										download_url =  v_widget.contents[9].contents[1].contents[3].contents[1].a.get("href").strip()
 
 								else:
 									download_url =  v_widget.contents[5].contents[1].contents[3].contents[1].a.get("href").strip()
