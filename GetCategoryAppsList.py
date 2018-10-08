@@ -456,9 +456,9 @@ if __name__ == "__main__":
 	fileDir = os.path.dirname(os.path.abspath(__file__)) 
 	AppName =  sys.argv[1]
 	End = int(sys.argv[2])
-	SearchNumber = int(sys.argv[3])
+	#SearchNumber = int(sys.argv[3])
 
-	getCategoryAppList(AppName, SearchNumber)
+	getCategoryAppList(AppName, End)
 
 	dirName = fileDir + "/" + AppName
 	
