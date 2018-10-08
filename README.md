@@ -49,8 +49,41 @@ There is a gap of 10 seconds between each download.
    - 4 to get 240
    and so on
 
-This script will create a folder for the category and a folder per app.
+This script will create a folder for the category and a folder per app. 
+
+Make sure to type the category in capitals
    
+   
+<h1>SummarizeApks.py Usage</h1>
+<b>python ./SummarizeApks.py</b>
+
+It wil move all the apps that contain more than 12 apk version to a folder call _ValidApps and it will separate them by category.
+
+The script will run <b>apkid</b> in each apk and create a final report as follows:
+
+TOOLS
+Find My
+Number of APKS(15)
+Number of APKS Good to go(15)
+Number of APKS Packed(0)
+
+AppLock
+Number of APKS(19)
+Number of APKS Good to go(19)
+Number of APKS Packed(0)
+
+Call Recorder
+Number of APKS(24)
+Number of APKS Good to go(24)
+Number of APKS Packed(0)
+
+In case it finds any apk packed, It will add the list of apks. The name of this report will be as follows:
+
+TOOLS(19).txt
+
+where TOOLs is the category and 19 the number of apps that have the 12 apks versions.
+
+
 
 
 
