@@ -41,6 +41,8 @@ There is a gap of 10 seconds between each download.
 <h1>GetCategoryAppsList.py Usage</h1>
 <b>python ./GetCategoryAppsList.py  "PRODUCTIVITY" 4</b>
 
+<b>python ./GetCategoryAppsList.py  "PRODUCTIVITY" 4 "Adobe Scan"</b>
+
 "PRODUCTIVITY" is the Category that you will look for in Google Play Store
 4 is the number of times I will refresh the google play search list. 
    - 1 to get 60 apps
@@ -50,7 +52,7 @@ There is a gap of 10 seconds between each download.
    and so on
 
 This script will create a folder for the category and a folder per app. 
-
+if the app name is added to the command, the Google search will be ignored and the script will look for and download all the app apks given in the command. This last parameter will be the search term in APKMirror. 
 Make sure to type the category in capitals
    
    
