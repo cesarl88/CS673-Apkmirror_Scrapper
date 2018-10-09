@@ -244,7 +244,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 #		SearchPages = Start_SearchPages + 1
 	
 	#CSV Headers
-	csv_content = "App Version, Date,  Details URL, Download URl, APK Info\n"
+	csv_content = "App Version, Date,  Details URL, Download URl,DEV, APK Info\n"
 
 	urls = []
 	today = datetime.strptime("January 1, 2016", "%B %d, %Y")#datetime.now()
@@ -386,7 +386,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				download_url = download_url.replace("//", "/")	
 				download = download.replace("//", "/")	
 
-				csv_content += Name + ", " + Date +"," +  download_url +","+ download + "," + apk_details_str.decode("utf-8") + '\n'
+				csv_content += Name + ", " + Date +"," +  download_url +","+ download + "," +byDev+ ","+ apk_details_str.decode("utf-8") + '\n'
 				urls.append(download_url + "download")
 				AppNumbers[byDev] += 1
 				print("Number of versions "+ byDev + " so far: " + str(AppNumbers[byDev]))
