@@ -490,7 +490,7 @@ if __name__ == "__main__":
 					temp = title.contents[0].split(".")
 					splitted = temp[1].strip().encode("utf-8").split()
 					size = len(splitted)
-					size = min(3, size)
+					size = min(2, size)
 					name = " ".join(splitted[0:size])
 					printable = set(string.printable)
 					name = filter(lambda x: x in printable, name)
