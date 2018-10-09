@@ -393,7 +393,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 
 	#Saving CSV Content
 
-	f = open(dirName + Directory + "/" + AppName.replace(":","").replace(",", "").replace("-").replace("/")  + "_Description.csv","w+")
+	f = open(dirName + Directory + "/" + AppName.replace(":","").replace(",", "").replace("-").replace("/","")  + "_Description.csv","w+")
 	f.write(csv_content.encode("utf-8"))
 	f.close()
 
