@@ -8,7 +8,8 @@ import csv
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from bs4 import BeautifulSoup
-import _brotli
+
+import string
 
 
 def getCategoryAppList(Category, pages):
@@ -103,7 +104,8 @@ def readNext(page, app_name, category):
 	list_widget = soup.find("div", attrs={"class": "listWidget"})
 	#print list_widget
 	padding = list_widget.find("div", attrs={"class": "addpadding"})
-	if padding or page >= 20:
+	if padding or page >= 40:
+		page -=1
 		print("eop")
 	else:
 		pagination = soup.find("div", attrs={"class": "pagination desktop"})
@@ -131,7 +133,9 @@ def readNext(page, app_name, category):
 				return readNext(page + 1, app_name, category)
 			else:
 				print("eop")
+				page -=1
 		else:
+			page -=1
 			print("eop")
 		
 
@@ -294,7 +298,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				if date_diff.years >= 2 and date_diff.months >= 6:
 					isdone = False
 					for key, value in AppNumbers.items():
-						isdone = value >= 15
+						isdone = value >= 24
 
 					if isdone:
 						print("Information collected for 2 years stopping process")
@@ -304,8 +308,8 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 					difference_in_months = relativedelta(Dates[byDev], appDate).months
 					print("Months Difference: " + str(difference_in_months))
 
-				if(difference_in_months < 2):
-					print("Less than 2 months ignoring")
+				if(difference_in_months < 1):
+					print("Less than 1 months ignoring")
 					continue
 
 				Dates[byDev] = appDate
@@ -446,30 +450,30 @@ def download_apk(Path, app_name, url):
 
 if __name__ == "__main__":
 
-	#print(bs4.__file__)
-	print(_brotli.__file__)
-	#print(bs4.__file__)
-	#from .builder import builder_registry, ParserRejectedMarkup
-
 
 	#Current Directory
 	fileDir = os.path.dirname(os.path.abspath(__file__)) 
-	AppName =  sys.argv[1]
+	Category =  sys.argv[1]
 	End = int(sys.argv[2])
-	#SearchNumber = int(sys.argv[3])
-
-	getCategoryAppList(AppName, End)
-
-	dirName = fileDir + "/" + AppName
-	
-	Content = "Index, Name\n"
 	Apps = []
+
+
+	if len(sys.argv) == 4:
+		End = 0
+		Apps.append(sys.argv[3])
+
+
+	getCategoryAppList(Category, End)
+
+	dirName = fileDir + "/" + Category
+	
+	Content = "Index, Name, Search Term(comma replace by -)\n"
 
 	for i in range(0, End ):
 
-		print ("Parsing Category Html: " + AppName + ", Index: " + str(i))
+		print ("Parsing Category Html: " + Category + ", Index: " + str(i))
 
-		htmlFileName = dirName + "/" +AppName + str(i) + ".html"
+		htmlFileName = dirName + "/" +Category + str(i) + ".html"
 		HtmlFile = open(htmlFileName, "r")
 		HtmlContent = HtmlFile.read()
 
@@ -484,16 +488,22 @@ if __name__ == "__main__":
 				title = app.find("a", attrs={"class": "title"})
 				if title.contents and len(title.contents):
 					temp = title.contents[0].split(".")
-					Content += u" ".join((temp[0] + ",", temp[1].strip())).encode("utf-8").strip() + "\n"
 					splitted = temp[1].strip().encode("utf-8").split()
 					size = len(splitted)
-					size = min(2, size)
+					size = min(3, size)
 					name = " ".join(splitted[0:size])
-					#print Content
-					Apps.append(name)
+					printable = set(string.printable)
+					name = filter(lambda x: x in printable, name)
+					Content += u" ".join((temp[0].strip().replace(",", "_")  + ",", temp[1].strip().replace(",", "_") )).encode("utf-8").strip() + "," + name.replace(",", "_") + "\n"
+					
+					Apps.append(name.strip())
 
 
 	print("Looping in the Apps")
+	if End != 0:
+		f = open(dirName + "/" + Category + ".csv","w+")
+		f.write(str(Content));
+		f.close()
 	#print(Apps)
 	search_pages = 1
 	for app in Apps:
@@ -507,8 +517,49 @@ if __name__ == "__main__":
 		print("App Search: " + app)
 
 		if not os.path.exists(dirName + Directory + "/SearchDone"):
-			search_pages = readNext(1, app, AppName)
+			search_pages = readNext(1, app, Category)
 			print("Search Pages: " + str(search_pages))
+
+			#Trying removing last -
+			tmp_app = app.strip()
+			if(search_pages == 0) and tmp_app.endswith("-"):
+				tmp_app = tmp_app[0:len(tmp_app) - 1].strip()
+				print("Search Pages not found. Removin last - : " + tmp_app)
+				search_pages = readNext(1, tmp_app, Category)
+				print("Search Pages: " + str(search_pages))
+
+
+			#Trying removing last ,
+			tmp_app = app.strip()
+			if(search_pages == 0) and tmp_app.endswith(","):
+				tmp_app = tmp_app[0:len(tmp_app) - 1].strip()
+				print("Search Pages not found. Removing last , : " + tmp_app)
+				search_pages = readNext(1, tmp_app, Category)
+				print("Search Pages: " + str(search_pages))
+
+			#Trying removing -
+			if(search_pages == 0) and "-" in tmp_app:
+				tmp_app = tmp_app.replace("-", "").strip()
+				print("Search Pages not found. Removing - : " + tmp_app)
+				search_pages = readNext(1, tmp_app, Category)
+				print("Search Pages: " + str(search_pages))
+
+
+			#Trying removing ,
+			if(search_pages == 0) and "," in tmp_app:
+				tmp_app = tmp_app.replace(",", "").strip()
+				print("Search Pages not found. Removing , : " + tmp_app)
+				search_pages = readNext(1, tmp_app, Category)
+				print("Search Pages: " + str(search_pages))
+
+			#Trying removing :
+			if(search_pages == 0) and ":" in tmp_app:
+				tmp_app = tmp_app.replace(":", "").strip()
+				print("Search Pages not found. Trying with : " + tmp_app)
+				search_pages = readNext(1, tmp_app, Category)
+				print("Search Pages: " + str(search_pages))
+
+
 			f = open(dirName + Directory + "/SearchDone","w+")
 			f.write(str(search_pages));
 			f.close()
@@ -522,7 +573,7 @@ if __name__ == "__main__":
 
 
 		if not os.path.exists(dirName + Directory + "/SearchProcessDone"):
-			ProcessSearchPages(app,AppName, 1, search_pages)
+			ProcessSearchPages(app,Category, 1, search_pages)
 			f = open(dirName + Directory + "/SearchProcessDone","w+")
 			f.write("Done")
 			f.close()
