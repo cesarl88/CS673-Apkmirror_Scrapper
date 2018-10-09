@@ -73,6 +73,9 @@ if __name__ == '__main__':
 					Command = "cp -r ./" + cat + "/" + app +" ./_ValidApps/" + cat + "/"
 					print("Copying to " + newpath)
 					os.system(Command)
+					Command = "cp -r ./" + cat + "/" +cat+".csv" + " ./_ValidApps/" + cat + "/"
+					print("Copying to " + newpath)
+					os.system(Command)
 
 
 			print("There are " + str(NumberOfApps) + " Valid apps for this category")
