@@ -133,9 +133,9 @@ def readNext(page, app_name, category):
 				return readNext(page + 1, app_name, category)
 			else:
 				print("eop")
-				page -=1
+				#page -=1
 		else:
-			page -=1
+			#page -=1
 			print("eop")
 		
 
@@ -521,42 +521,40 @@ if __name__ == "__main__":
 			print("Search Pages: " + str(search_pages))
 
 			#Trying removing last -
-			tmp_app = app.strip()
-			if(search_pages == 0) and tmp_app.endswith("-"):
-				tmp_app = tmp_app[0:len(tmp_app) - 1].strip()
-				print("Search Pages not found. Removin last - : " + tmp_app)
-				search_pages = readNext(1, tmp_app, Category)
+			if(search_pages == 0) and app.endswith("-"):
+				app = app[0:len(app) - 1].strip()
+				print("Search Pages not found. Removin last - : " + app)
+				search_pages = readNext(1, app, Category)
 				print("Search Pages: " + str(search_pages))
 
 
 			#Trying removing last ,
-			tmp_app = app.strip()
-			if(search_pages == 0) and tmp_app.endswith(","):
-				tmp_app = tmp_app[0:len(tmp_app) - 1].strip()
-				print("Search Pages not found. Removing last , : " + tmp_app)
-				search_pages = readNext(1, tmp_app, Category)
+			if(search_pages == 0) and app.endswith(","):
+				app = app[0:len(app) - 1].strip()
+				print("Search Pages not found. Removing last , : " + app)
+				search_pages = readNext(1, app, Category)
 				print("Search Pages: " + str(search_pages))
 
 			#Trying removing -
-			if(search_pages == 0) and "-" in tmp_app:
-				tmp_app = tmp_app.replace("-", "").strip()
-				print("Search Pages not found. Removing - : " + tmp_app)
-				search_pages = readNext(1, tmp_app, Category)
+			if(search_pages == 0) and "-" in app:
+				app = app.replace("-", "").strip()
+				print("Search Pages not found. Removing - : " + app)
+				search_pages = readNext(1, app, Category)
 				print("Search Pages: " + str(search_pages))
 
 
 			#Trying removing ,
-			if(search_pages == 0) and "," in tmp_app:
-				tmp_app = tmp_app.replace(",", "").strip()
-				print("Search Pages not found. Removing , : " + tmp_app)
-				search_pages = readNext(1, tmp_app, Category)
+			if(search_pages == 0) and "," in app:
+				app = app.replace(",", "").strip()
+				print("Search Pages not found. Removing , : " + app)
+				search_pages = readNext(1, app, Category)
 				print("Search Pages: " + str(search_pages))
 
 			#Trying removing :
-			if(search_pages == 0) and ":" in tmp_app:
-				tmp_app = tmp_app.replace(":", "").strip()
-				print("Search Pages not found. Trying with : " + tmp_app)
-				search_pages = readNext(1, tmp_app, Category)
+			if(search_pages == 0) and ":" in app:
+				app = app.replace(":", "").strip()
+				print("Search Pages not found. Trying with : " + app)
+				search_pages = readNext(1, app, Category)
 				print("Search Pages: " + str(search_pages))
 
 
