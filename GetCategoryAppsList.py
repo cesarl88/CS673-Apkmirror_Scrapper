@@ -109,7 +109,7 @@ def readNext(page, app_name, category):
 		print("eop")
 	else:
 		pagination = soup.find("div", attrs={"class": "pagination desktop"})
-		app = app_name.replace(":","").replace("'", "").replace(",", "").replace(".", "").replace("/","").replace("-","")
+		app = app_name.replace(":","").replace("'", "").replace(",", "").replace(".", "").replace("/","").replace("-","").strip()
 				
 
 		fileDir = os.path.dirname(os.path.abspath(__file__)) 
