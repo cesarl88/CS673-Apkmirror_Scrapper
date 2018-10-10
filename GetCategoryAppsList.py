@@ -495,8 +495,8 @@ if __name__ == "__main__":
 					printable = set(string.printable)
 					name = filter(lambda x: x in printable, name)
 					Content += u" ".join((temp[0].strip().replace(",", "_")  + ",", temp[1].strip().replace(",", "_") )).encode("utf-8").strip() + "," + name.replace(",", "_") + "\n"
-					
-					Apps.append(name.strip())
+					if len(name.strip()) >= 2:
+						Apps.append(name.strip())
 
 
 	print("Looping in the Apps")
