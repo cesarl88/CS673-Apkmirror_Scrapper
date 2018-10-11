@@ -22,6 +22,9 @@ if __name__ == '__main__':
 			Report += cat + "\n"
 			NumberOfApps = 0
 			for app in cat_apps:
+				if app.startwith("cs_ig_"):
+					continue;
+
 				apk_path = os.path.join(folder_app,app)
 				#print apk_path
 				apks = [dI for dI in os.listdir(apk_path) if os.path.isfile(os.path.join(apk_path,dI)) and os.path.join(apk_path,dI).endswith(".apk")]
@@ -70,9 +73,9 @@ if __name__ == '__main__':
 					Command = "mkdir " + newpath
 					print("Creating " + newpath)
 					os.system(Command)
-					Command = "cp -r ./" + cat + "/" + app +" ./_ValidApps/" + cat + "/"
-					print("Copying to " + newpath)
-					os.system(Command)
+					#Command = "cp -r ./" + cat + "/" + app +" ./_ValidApps/" + cat + "/*.apk"
+					#print("Copying to " + newpath)
+					#os.system(Command)
 					Command = "cp -r ./" + cat + "/" +cat+".csv" + " ./_ValidApps/" + cat + "/"
 					print("Copying to " + newpath)
 					os.system(Command)

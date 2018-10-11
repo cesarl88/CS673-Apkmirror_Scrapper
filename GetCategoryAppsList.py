@@ -604,10 +604,41 @@ if __name__ == "__main__":
 			with open(FilePath) as csv_file:
 					print("Csv Found")
 					csv_reader = csv.reader(csv_file, delimiter = ",")
+					csv_reader_in = csv.reader(csv_file, delimiter = ",")
 					line_count = 0
+
+					dev = {}
+					t = 0
 					for row in csv_reader:
 						if line_count == 0:
 							line_count = 1
+							
+							if row[4] == 'DEV':
+								print("Contains DEV checking")
+								app_to_download_name = []
+								app_to_download_url = []
+								app_to_download_dev = []
+								for r in csv_reader:
+									if t == 0:
+										t = 1
+									else:
+										if r[4] in dev:
+											dev[r[4]] += 1
+										else:
+											dev[r[4]] = 1
+											
+										app_to_download_name.append(r[0])
+										app_to_download_url.append(r[3])
+										app_to_download_dev.append(r[4])
+
+								print(dev);
+
+								for i in range(len(app_to_download_name)):
+									if dev[app_to_download_dev[i]] > 9:
+										download_apk(dirName + Directory, app_to_download_name[i], app_to_download_url[i])
+									else:
+										print(app_to_download_name[i] + " ignored because not enough APKS: " + str(dev[app_to_download_dev[i]]))
+
 						else:
 							download_apk(dirName + Directory, row[0], row[3])
 
