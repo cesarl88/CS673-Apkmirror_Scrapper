@@ -22,7 +22,7 @@ if __name__ == '__main__':
 			Report += cat + "\n"
 			NumberOfApps = 0
 			for app in cat_apps:
-				if app.startwith("cs_ig_"):
+				if app.startswith("cs_ig_"):
 					continue;
 
 				apk_path = os.path.join(folder_app,app)
