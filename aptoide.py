@@ -17,7 +17,7 @@ import re
 
 def get_html_content(url, path):
 	
-	time.sleep(2) #delay for 5 seconds
+	time.sleep(3) #delay for 5 seconds
 	#url = "https://www.apkmirror.com/apk/samsung-electronics-co-ltd/artcanvas/artcanvas-1-0-41-release/artcanvas-draw-paint-1-0-41-android-apk-download/"
 	print("URL: " + url)
 	print("path: " + path)
@@ -106,8 +106,13 @@ if __name__ == '__main__':
 			apk_count = 0
 			for it in items:
 				t =  it.find("div", attrs={"class" : "bundle-item__info"})
+				#print t
 				date_span =  it.find("span", attrs={"class" : "bundle-info--date"})
 				
+				if date_span == None:
+					break;
+
+
 				date =  date_span.string
 				print "date: " + date
 				#print it
@@ -192,7 +197,7 @@ if __name__ == '__main__':
 
 			next_page = soup.find("div", attrs={"class" : "widget-pagination__next"})
 			print next_page
-			if next_page.a:
+			if next_page != None and next_page.a:
 				Next = True
 				next_page_url =  next_page.a.get("href")
 				url_list = next_page_url.split('?')

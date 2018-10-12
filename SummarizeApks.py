@@ -12,6 +12,10 @@ if __name__ == '__main__':
 		cat = sys.argv[1]
 		app = sys.argv[2]
 		apk_path = os.path.join('.',sys.argv[1]) 
+		
+		if not os.path.exists(apk_path):
+			os.mkdir(apk_path)
+
 		apk_path = os.path.join(apk_path,app)  
 		apks = [dI for dI in os.listdir(apk_path) if os.path.isfile(os.path.join(apk_path,dI)) and os.path.join(apk_path,dI).endswith(".apk")]
 
@@ -44,14 +48,17 @@ if __name__ == '__main__':
 				
 			app = app.replace(" ", "\ ")
 			newpath = "./_ValidApps/" + cat + "/" + app + "/"
-			Command = "mkdir '" + newpath
+			Command = "mkdir " + newpath
 			print("Creating " + newpath)
+			print(Command)
 			os.system(Command)
 			Command = "cp -r ./" + cat + "/" + app + "/*.apk ./_ValidApps/" + cat + "/" + app
 			print("Copying to " + newpath)
+			print(Command)
 			os.system(Command)
 			Command = "cp -r ./" + cat + "/" +cat+".csv" + " ./_ValidApps/" + cat + "/"
 			print("Copying to " + newpath)
+			print(Command)
 			os.system(Command)
 
 	else:
@@ -117,12 +124,15 @@ if __name__ == '__main__':
 						newpath = "./_ValidApps/" + cat + "/" + app + "/"
 						Command = "mkdir " + newpath
 						print("Creating " + newpath)
+						print(Command)
 						os.system(Command)
 						Command = "cp -r ./" + cat + "/" + app + "/*.apk ./_ValidApps/" + cat + "/" + app
 						print("Copying to " + newpath)
+						print(Command)
 						os.system(Command)
 						Command = "cp -r ./" + cat + "/" +cat+".csv" + " ./_ValidApps/" + cat + "/"
 						print("Copying to " + newpath)
+						print(Command)
 						os.system(Command)
 
 

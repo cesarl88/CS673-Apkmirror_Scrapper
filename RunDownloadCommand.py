@@ -34,16 +34,37 @@ if __name__ == '__main__':
 		i = 0
 		for app in Apps:
 
-			Command = "python ./aptoide.py '" + Category + "' '" + app + "' 'https://" + Apps[i] + ".en.aptoide.com/versions'" 
+			Command = "python ./aptoide.py '" + Category + "' '" + app + "' 'https://" + app + ".en.aptoide.com/versions'" 
 			print("Command " + Command)
 			os.system(Command)
 
 	else:
 
+		Apps =  [
+				'aida','App Lock','Bill',
+				'Box','Boxer','BusyBox X',
+				'BusyBox Stephen','Facebook Ads','File Commander',
+				'FX File','Google My','Google Primer',
+				'Hangouts Meet','LinkedIn Job','Microsoft Authenticator',
+				'Microsoft Power','Microsoft Remote','My Verizon',
+				'My Business','OfficeSuite','Paypa Here',
+				'pulse','Recharge Bill','SamsungBilling',
+				'SINC','Skype for','Slack',
+				'slacker','TotalCommander','Web',
+				'wire','word to','workplace by',
+				'workplace chat'
+				]
 
-		#Apps = ['Titanium Backup','SuperSU', 'Network Signal Guru',  'Root Checker', 'WiFiAnalyzer (open-source)', 'XPosed Installer', 'FlashFire', 'Lumen', ' SpeedTest Ookla', 'Kernel']
+
+		#Category = 'TOOLS'
+		#Apps = [
+		#	'Titanium Backup','SuperSU', 'Network Signal Guru',
+		#	 'Root Checker', 'WiFiAnalyzer (open-source)', 'XPosed Installer', 
+		#	 'FlashFire', 'Lumen', ' SpeedTest Ookla', 'Kernel'
+
+		 #]
 		
-		Apps = ['yandex Browser', 'Canvas', 'Kids Drawing', 'Samsung pen up', 'sony sketch','tv time Toze', 'Khan Academy', 'Notes blackberry','Ampere', 'Pocket: Save', 'Google Art & Culture']
+		#Apps = ['yandex Browser', 'Canvas', 'Kids Drawing', 'Samsung pen up', 'sony sketch','tv time Toze', 'Khan Academy', 'Notes blackberry','Ampere', 'Pocket: Save', 'Google Art & Culture']
 		# Bussiness stitcher', 'aliexpress',
 		
 		for app in Apps:
