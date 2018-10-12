@@ -183,7 +183,7 @@ if __name__ == '__main__':
 				path = fileDir + "/" + app + "_"+version+".apk"
 				apps_to_download[path] = download_page
 
-				csv = path + "," + download_page + "\n"
+				csv += path + "," + download_page + "\n"
 
 				#apk_count += 1
 
