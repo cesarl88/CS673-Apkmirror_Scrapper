@@ -17,7 +17,7 @@ import re
 
 def get_html_content(url, path):
 	
-	time.sleep(5) #delay for 5 seconds
+	time.sleep(2) #delay for 5 seconds
 	#url = "https://www.apkmirror.com/apk/samsung-electronics-co-ltd/artcanvas/artcanvas-1-0-41-release/artcanvas-draw-paint-1-0-41-android-apk-download/"
 	print("URL: " + url)
 	print("path: " + path)
@@ -88,7 +88,7 @@ if __name__ == '__main__':
 		last_app_days = 0
 		
 		today = datetime.strptime("January 1, 2016", "%B %d, %Y")
-		last_appDate = datetime.now()
+		last_appDate = today
 		difference_in_months = 2
 		Year = 2018
 
@@ -129,7 +129,7 @@ if __name__ == '__main__':
 				print "Version " + str(unit)
 
 				if unit == "years" or unit == "year":	
-					Year -= value
+					Year = 2018 - value
 
 				print("Date: " + date + "/" + str(Year))
 				appDate = datetime.strptime(date + "/" + str(Year), "%d/%m/%Y")
@@ -177,8 +177,11 @@ if __name__ == '__main__':
 				
 			#	last_app_days = days_count	
 
+				print "-------------------"
 				download_btn = soup_app.find("a", attrs={"class" : "aptweb-button--app"})
-				print download_btn.get("href")	
+				download_page =  download_btn.div.get("data-direct-download")
+
+				print "Link to download: " + download_page
 
 				path = fileDir + "/" + app + "_"+version+".apk"
 				apps_to_download[path] = download_page
@@ -200,11 +203,14 @@ if __name__ == '__main__':
 		f = open(csv_path,"w+")
 		f.write(csv)
 		f.close()
+
+		print csv
 	else:
 		with open(csv_path) as csv_file:
 			print("Csv Found")
 			csv_reader = csv.reader(csv_file, delimiter = ",")
 			line_count = 0
+			t= 0
 
 			for row in csv_reader:
 				if t == 0:
@@ -215,14 +221,18 @@ if __name__ == '__main__':
 
 	if len(apps_to_download) >= 11:
 
-		for key, value in d.iteritems():
+		for key, value in apps_to_download.iteritems():
 			
 			print("About to download " + key)
 			download_page = requests.get(value)
 			d_page = BeautifulSoup(download_page.content, "html.parser")
+			#print d_page
 			dl = d_page.find("a", string="Click here")
 
+			#print dl
+
 			download_page = requests.get(dl.get("href"))
+				
 			with open(key,"wb") as f:
 				f.write(download_page.content)
 	else:
