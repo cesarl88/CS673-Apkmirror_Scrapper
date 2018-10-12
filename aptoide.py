@@ -87,7 +87,7 @@ if __name__ == '__main__':
 		days_count = 0
 		last_app_days = 0
 		
-		today = datetime.strptime("January 1, 2016", "%B %d, %Y")
+		today = datetime.strptime("January 1, 2017", "%B %d, %Y")
 		last_appDate = today
 		difference_in_months = 2
 		Year = 2018
@@ -218,25 +218,30 @@ if __name__ == '__main__':
 				else:
 					apps_to_download[row[0]] = row[1]
 
+	if not os.path.exists(fileDir + "/DownloadProcessDone"):
 
-	if len(apps_to_download) >= 11:
 
-		for key, value in apps_to_download.iteritems():
-			
-			print("About to download " + key)
-			download_page = requests.get(value)
-			d_page = BeautifulSoup(download_page.content, "html.parser")
-			#print d_page
-			dl = d_page.find("a", string="Click here")
+		if len(apps_to_download) >= 11:
 
-			#print dl
-
-			download_page = requests.get(dl.get("href"))
+			for key, value in apps_to_download.iteritems():
 				
-			with open(key,"wb") as f:
-				f.write(download_page.content)
-	else:
-		print("Not enough APKs")
+				print("About to download " + key)
+				download_page = requests.get(value)
+				d_page = BeautifulSoup(download_page.content, "html.parser")
+				#print d_page
+				dl = d_page.find("a", string="Click here")
+
+				#print dl
+
+				download_page = requests.get(dl.get("href"))
+					
+				with open(key,"wb") as f:
+					f.write(download_page.content)
+		else:
+			print("Not enough APKs")
+		f = open(fileDir + "/DownloadProcessDone","w+")
+		f.write("Done")
+		f.close()	
 
 	#time.sleep(10)
 
