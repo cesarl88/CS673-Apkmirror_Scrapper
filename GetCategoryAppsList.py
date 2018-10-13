@@ -454,7 +454,7 @@ def download_apk(Path, app_name, url):
 	#	f.write(apk_content.content)
 
 
-	time.sleep(15) #delay for 10 seconds
+	time.sleep(20) #delay for 10 seconds
 
 #main
 
@@ -620,11 +620,16 @@ if __name__ == "__main__":
 			print("Search Analysis Done. Skiping")
 
 		##Comment line bellow to include downloading Process##
-		continue
+		#continue
 
 		#################
 		#APK Downloading#
 		#################
+		TimeLog = ""
+
+		AppStartDownloadTime = time.time()
+		AppElapsedTime = 0
+
 		if not os.path.exists(dirName + Directory + "/DownloadProcessDone"):
 			FilePath = dirName + Directory + "/" + app.replace(",","").replace("'","").replace(".","").replace(":","").replace("+","").strip()  + "_Description.csv"
 			with open(FilePath) as csv_file:
@@ -633,6 +638,7 @@ if __name__ == "__main__":
 					line_count = 0
 
 					dev = {}
+					downloaded_apk = {}
 					t = 0
 					for row in csv_reader:
 						if line_count == 0:
@@ -651,6 +657,7 @@ if __name__ == "__main__":
 											dev[r[4]] += 1
 										else:
 											dev[r[4]] = 1
+											downloaded_apk[r[4]] = 0
 											
 										app_to_download_name.append(r[0])
 										app_to_download_url.append(r[3])
@@ -658,20 +665,31 @@ if __name__ == "__main__":
 
 								print(dev);
 
+
+
 								for i in range(len(app_to_download_name)):
 									if dev[app_to_download_dev[i]] > 9:
-										download_apk(dirName + Directory, app_to_download_name[i], app_to_download_url[i])
+										if downloaded_apk[app_to_download_dev[i]] < 13:
+											download_apk(dirName + Directory, app_to_download_name[i], app_to_download_url[i])
+										else:
+											print("Ignored becuase 12 apks have already been downloaded")
 									else:
 										print(app_to_download_name[i] + " ignored because not enough APKS: " + str(dev[app_to_download_dev[i]]))
 
 						else:
 							download_apk(dirName + Directory, row[0], row[3])
 
+
+
+			AppElapsedTime = time.time() - AppStartDownloadTime;
 			f = open(dirName + Directory + "/DownloadProcessDone","w+")
-			f.write("Done")
+			f.write("AppElapsedTime = " + str(AppElapsedTime) + " s")
 			f.close()
 		else:
 			print("Download Process Done. Skiping")
+
+
+
 
 
 		print("#################################")
