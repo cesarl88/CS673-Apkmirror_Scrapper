@@ -1,0 +1,81 @@
+
+PRODUCTIVITY
+Apps = [
+	'Adobe Acrobat','CamScanner','dropbox',
+	'ES File Explorer Global','Solid Explorer','Solid Explorer ',
+	'Google Calendar','Google Docs','Google Drive',
+	'Google Slides','Microsoft Cortana','Microsoft Excel',
+	'Microsoft OneDrive','Microsoft OneNote','Microsoft PowerPoint',
+	'Microsoft Word','Samsung Notes','SwiftKey',
+	'SwiftKey'
+	]
+
+TOOLS
+
+Apps = [
+		'BitTorrent Downloader','BitTorrent Downloads','Asus Calculator',
+		'Samsung Calculator','CCleaner','Fleksy',
+		'Google Clock','Google Translate','Kernel',
+		'Lookout','Microsoft Bing','Opera Mini',
+		'Network Signal Guru','Peel Smart','Root Checker',
+		'Shareit','Sony Clock','Team Viewer For Remote',
+		'Team Viewer QuickSUpport','tv SideView','Wifi Analyzer',
+]
+
+BUSINESS
+
+Apps =  [
+		'aida','avast mobile','mint Budget',
+		'BusyBox for Android','Dropbox Paper',
+		'Facebook Ads','Files Go Goole', 
+		'Total Commander - file manager', 'Maps.me', 
+		'FX File NextApp','Google My Business',
+		'Hangouts Meet','Microsoft Remote','My Verizon VZ',
+		'OfficeSuite','Paypal Here',
+		'pulse SMS','Samsung Billing',
+		'dji go','Skype for','Slack',
+		'slacker','Android System WebView',
+		'Wire Secure wire','Wordpress'
+		]
+
+COMMUNICATION
+Apps = [
+		'Android Auto','Android Auto','Blackberry Contacts',
+		'Brave Browser','Call Recorder NLL','Discord',
+		'Dolphin - Best','Inbox Google','Google Allo',
+		'Google Duo','Google Contacts','GroupMe',
+		'Hangouts','kik interactive','Microsoft Edge',
+		'Samsung Contacts Storage','Samsung Contact','Skype Lite',
+		'True Caller','WeChat'
+		]
+
+FINANCE
+Apps = [
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+]
+
+
+
+
+SHOPPING
+Apps = [
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+'','','',
+]
