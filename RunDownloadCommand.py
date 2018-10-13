@@ -84,7 +84,7 @@ if __name__ == '__main__':
 			Command = "python ./GetCategoryAppsList.py '" + Category + "' 0 '" + app + "'"
 			print("Command " + Command)
 			os.system(Command)
-		 	time.sleep(10) #delay for 10 seconds
+		 	time.sleep(150) #delay for 10 seconds
 			
  	#Running Summarize
 	for app in Apps:

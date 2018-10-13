@@ -454,7 +454,7 @@ def download_apk(Path, app_name, url):
 	#	f.write(apk_content.content)
 
 
-	time.sleep(20) #delay for 10 seconds
+	time.sleep(30) #delay for 10 seconds
 
 #main
 
@@ -669,7 +669,7 @@ if __name__ == "__main__":
 
 								for i in range(len(app_to_download_name)):
 									if dev[app_to_download_dev[i]] > 9:
-										if downloaded_apk[app_to_download_dev[i]] < 13:
+										if downloaded_apk[app_to_download_dev[i]] < 14:
 											download_apk(dirName + Directory, app_to_download_name[i], app_to_download_url[i])
 										else:
 											print("Ignored becuase 12 apks have already been downloaded")
