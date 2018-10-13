@@ -10,9 +10,10 @@ if __name__ == '__main__':
     ######################
 	#Manualy set Category#
 	######################
-	Category = 'BUSINESS'
+	Category = 'PRODUCTIVITY'
 
 	if not IsFromAPKMirror:
+		print("")
 		#python ./aptoide.py 'EDUCATION' 'QuizLet'
 
 		#EDUCATIO
@@ -67,19 +68,14 @@ if __name__ == '__main__':
 		#   and also make sure that there  #
 		#   are enough versions            #
 		####################################
-		Apps =  [
-				'aida','avast mobile','mint Budget',
-				'BusyBox for Android','Dropbox Paper',
-				'Facebook Ads','Files Go Goole', 
-				'Total Commander - file manager', 'Maps.me', 
-				'FX File NextApp','Google My Business',
-				'Hangouts Meet','Microsoft Remote','My Verizon VZ',
-				'OfficeSuite','Paypal Here',
-				'pulse SMS','Samsung Billing',
-				'dji go','Skype for','Slack',
-				'slacker','Android System WebView',
-				'Wire Secure wire','Wordpress',
-				'workplace chat'
+		Apps = [
+				'Adobe Acrobat','CamScanner','dropbox',
+				'ES File Explorer Global','Solid Explorer','Solid Explorer ',
+				'Google Calendar','Google Docs','Google Drive',
+				'Google Slides','Microsoft Cortana','Microsoft Excel',
+				'Microsoft OneDrive','Microsoft OneNote','Microsoft PowerPoint',
+				'Microsoft Word','Samsung Notes','SwiftKey',
+				'SwiftKey'
 				]
 		
 		#Running Category analysis
