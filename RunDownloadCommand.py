@@ -1,11 +1,12 @@
 import os
 import subprocess, sys
 import json
+import time
 
 if __name__ == '__main__':
 
-	IsFromAPKMirror = True
-	Category = 'TOOLS'
+	IsFromAPKMirror = False
+	Category = 'BUSINESS'
 
 	if IsFromAPKMirror:
 
@@ -53,17 +54,17 @@ if __name__ == '__main__':
 	else:
 
 		Apps =  [
-				'aida','App Lock','Bill',
-				'Box','Boxer','BusyBox X',
-				'BusyBox Stephen','Facebook Ads','File Commander',
-				'FX File','Google My','Google Primer',
-				'Hangouts Meet','LinkedIn Job','Microsoft Authenticator',
-				'Microsoft Power','Microsoft Remote','My Verizon',
-				'My Business','OfficeSuite','Paypa Here',
-				'pulse','Recharge Bill','SamsungBilling',
-				'SINC','Skype for','Slack',
-				'slacker','TotalCommander','Web',
-				'wire','word to','workplace by',
+				'aida','avast mobile','mint Budget',
+				'BusyBox for Android','Dropbox Paper',
+				'Facebook Ads','Files Go Goole', 
+				'Total Commander - file manager', 'Maps.me', 
+				'FX File NextApp','Google My Business',
+				'Hangouts Meet','Microsoft Remote','My Verizon VZ',
+				'OfficeSuite','Paypal Here',
+				'pulse SMS','Samsung Billing',
+				'dji go','Skype for','Slack',
+				'slacker','Android System WebView',
+				'Wire Secure wire','Wordpress',
 				'workplace chat'
 				]
 
@@ -84,6 +85,7 @@ if __name__ == '__main__':
 			Command = "python ./GetCategoryAppsList.py '" + Category + "' 0 '" + app + "'"
 			print("Command " + Command)
 			os.system(Command)
+		 	time.sleep(5) #delay for 10 seconds
 			
 
 	for app in Apps:

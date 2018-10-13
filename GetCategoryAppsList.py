@@ -147,7 +147,7 @@ def readNext(page, app_name, category):
 #Retrieves html content from apkmirror
 def get_html_content(url, path):
 	
-	time.sleep(8) #delay for 5 seconds
+	time.sleep(10) #delay for 5 seconds
 	#url = "https://www.apkmirror.com/apk/samsung-electronics-co-ltd/artcanvas/artcanvas-1-0-41-release/artcanvas-draw-paint-1-0-41-android-apk-download/"
 	print("URL: " + url)
 	print("path: " + path)
@@ -295,14 +295,12 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 
 				print("Dates Difference: Years(" + str(date_diff.years) + "), Months(" +str(date_diff.months)+")")
 
-				if date_diff.years >= 2 and date_diff.months >= 6:
-					isdone = False
-					for key, value in AppNumbers.items():
-						isdone = value >= 24
+				for key, value in AppNumbers.items():
+					isdone = value >= 12
 
-					if isdone:
-						print("Information collected for 2 years stopping process")
-						break
+				if isdone:
+					print("Information collected for 2 years stopping process")
+					break
 
 				if byDev in Dates:
 					difference_in_months = relativedelta(Dates[byDev], appDate).months
@@ -435,16 +433,28 @@ def download_apk(Path, app_name, url):
 
 		print("downloading " + url)
 		download_page = requests.get(url)
+		#d_page = BeautifulSoup(download_page.content, "html.parser")
+		#dl = d_page.find("a", string="here")
 
 
 	else:
 		download_page = requests.get(url)
+		#d_page = BeautifulSoup(download_page.text, "html.parser")
+		#dl = d_page.find("a", string="here")
+
+	f = open(Path + "/" + app_name + ".apk","w+")
+	f.write(download_page.content);
+	f.close()
+
+	#print 'Here'
+	#print dl
+	#apk_content = requests.get(dl.get("href"))	
 		
-	with open(Path + "/" + app_name + ".apk","wb") as f:
-		f.write(download_page.content)
+	#with open(Path + "/" + app_name + ".apk","wb") as f:
+	#	f.write(apk_content.content)
 
 
-	time.sleep(8) #delay for 10 seconds
+	time.sleep(15) #delay for 10 seconds
 
 #main
 
@@ -599,12 +609,12 @@ if __name__ == "__main__":
 		else:
 			print("Search Analysis Done. Skiping")
 
+		#continue
 		if not os.path.exists(dirName + Directory + "/DownloadProcessDone"):
 			FilePath = dirName + Directory + "/" + app.replace(",","").replace("'","").replace(".","").replace(":","").replace("+","").strip()  + "_Description.csv"
 			with open(FilePath) as csv_file:
 					print("Csv Found")
 					csv_reader = csv.reader(csv_file, delimiter = ",")
-					csv_reader_in = csv.reader(csv_file, delimiter = ",")
 					line_count = 0
 
 					dev = {}
