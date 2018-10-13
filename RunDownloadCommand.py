@@ -5,7 +5,7 @@ import json
 if __name__ == '__main__':
 
 	IsFromAPKMirror = True
-	Category = 'PRODUCTIVITY'
+	Category = 'TOOLS'
 
 	if IsFromAPKMirror:
 
@@ -17,17 +17,29 @@ if __name__ == '__main__':
 		#Urls = ['quizlet','languages','lumosity']
 
 		#PRODUCTIVITY
+	#	Apps = [
+	#		'adobe-acrobat-reader', 'camscanner', 'dropbox', 
+	#		'evernote', 'super-file-manager', 'fleksy-legacy', 
+	#		'gboard-the-google-keyboard', 'google-inc-calendar','docs', 
+	#		'google-drive', 'keep', 'google-talkback',
+	#		'google-sheets','slides','lastpass-authenticator',
+	#		'mega','cortana','microsoft-excel',
+	#		'outlook','office-mobile','microsoft-powerpoint',
+	#		'microsoft-corporation-to-do','microsoft-word','nytimes-latest-news',
+	#		'pokemon-tv','samsung-notes','starbucks',
+	#		'com-teamviewer-teamviewer','comcast-interactive-media-tv','es-file-explorer',
+	#		]
 		Apps = [
-			'adobe-acrobat-reader', 'camscanner', 'dropbox', 
-			'evernote', 'super-file-manager', 'fleksy-legacy', 
-			'gboard-the-google-keyboard', 'google-inc-calendar','docs', 
-			'google-drive', 'keep', 'google-talkback',
-			'google-sheets','slides','lastpass-authenticator',
-			'mega','cortana','microsoft-excel',
-			'outlook','office-mobile','microsoft-powerpoint',
-			'microsoft-corporation-to-do','microsoft-word','nytimes-latest-news',
-			'pokemon-tv','samsung-notes','starbucks',
-			'com-teamviewer-teamviewer','comcast-interactive-media-tv','es-file-explorer',
+			'avast-cleanup','bittorrent','snaptube',
+			'brave','calculator','ccleaner',
+			'kika-keyboard','google-inc-clock','google-opinion-rewards',
+			'google-translate','google-inc-earth','',
+			'kernel-booster','lookout-security-antivirus','microsoft-bing',
+			'opera-mini-web-browser','network-signal-guru','network-signal-info',
+			'peel-remote','remote-control-collection','root-checker-basic',
+			'shareit','android-deskclock','teamviewer',
+			'titanium-backup','tv-vodafone','vrem-software-development-wifi-analyzer',
+			'wifi-analyzer','home','fire-tv',
 			]
 		#Urls = ['adobe-acrobat-reader','camscanner','lumosity']
 		

@@ -105,95 +105,98 @@ if __name__ == '__main__':
 			i = 0
 			apk_count = 0
 			for it in items:
-				t =  it.find("div", attrs={"class" : "bundle-item__info"})
-				#print t
-				date_span =  it.find("span", attrs={"class" : "bundle-info--date"})
-				
-				if date_span == None:
-					break;
+				try:
+					t =  it.find("div", attrs={"class" : "bundle-item__info"})
+					#print t
+					date_span =  it.find("span", attrs={"class" : "bundle-info--date"})
+					
+					if date_span == None:
+						break;
 
 
-				date =  date_span.string
-				print "date: " + date
-				#print it
-				
+					date =  date_span.string
+					print "date: " + date
+					#print it
+					
 
-				download_page = t.a.get("href")
-				url_list = download_page.split('?')
-				print "Version url: "  + download_page
-				content = get_html_content(url_list[0],"/?" + url_list[1])
-				
-				soup_app = BeautifulSoup(content, "html.parser")
-				stats = soup_app.find("div", attrs={"class" : "header__stats"})
-				version = stats.contents[3].contents[3].string
-				list = stats.contents[3].contents[5].string.split(' ')
-				value = int(list[0])
-				unit = list[1]
+					download_page = t.a.get("href")
+					url_list = download_page.split('?')
+					print "Version url: "  + download_page
+					content = get_html_content(url_list[0],"/?" + url_list[1])
+					
+					soup_app = BeautifulSoup(content, "html.parser")
+					stats = soup_app.find("div", attrs={"class" : "header__stats"})
+					version = stats.contents[3].contents[3].string.encode('utf-8').strip()
+					list = stats.contents[3].contents[5].string.split(' ')
+					value = int(list[0])
+					unit = list[1]
 
-				print "Version " + str(version)
-				print "Version " + str(unit)
+					print "Version " + str(version)
+					print "Unit " + str(unit)
 
-				if unit == "years" or unit == "year":	
-					Year = 2018 - value
+					if unit == "years" or unit == "year":	
+						Year = 2018 - value
 
-				print("Date: " + date + "/" + str(Year))
-				appDate = datetime.strptime(date + "/" + str(Year), "%d/%m/%Y")
-				date_diff = relativedelta(today, appDate)
+					print("Date: " + date + "/" + str(Year))
+					appDate = datetime.strptime(date + "/" + str(Year), "%d/%m/%Y")
+					date_diff = relativedelta(today, appDate)
 
-				print("Dates Difference: Years(" + str(date_diff.years) + "), Months(" +str(date_diff.months)+")")
+					print("Dates Difference: Years(" + str(date_diff.years) + "), Months(" +str(date_diff.months)+")")
 
-				if date_diff.years >= 2 and date_diff.months >= 6:
-					isdone = apk_count >= 18
+					if date_diff.years >= 2 and date_diff.months >= 6:
+						isdone = apk_count >= 18
 
-					if isdone:
-						print("Information collected for 2 years stopping process")
-						break
+						if isdone:
+							print("Information collected for 2 years stopping process")
+							break
 
 
-				if last_appDate != today:		
-					difference_in_months = relativedelta(last_appDate, appDate).months
-					print("Months Difference: " + str(difference_in_months))
+					if last_appDate != today:		
+						difference_in_months = relativedelta(last_appDate, appDate).months
+						print("Months Difference: " + str(difference_in_months))
 
-				if(difference_in_months < 1):
-					print("Less than 1 months ignoring")
-					continue
+					if(difference_in_months < 1):
+						print("Less than 1 months ignoring")
+						continue
 
-				last_appDate = 	appDate
+					last_appDate = 	appDate
 
-		#		daystoadd= 0
+			#		daystoadd= 0
 
-				#if unit == "days" or unit == "day":
-				#	days_count = value 
-				#elif unit == "week" or unit == "weeks" :
-				#	days_count = 7 * value 
-				#elif unit == "month" or unit == "months":
-				#	days_count = 30 * value 
-				#else:
-				#	days_count = 364 * value
+					#if unit == "days" or unit == "day":
+					#	days_count = value 
+					#elif unit == "week" or unit == "weeks" :
+					#	days_count = 7 * value 
+					#elif unit == "month" or unit == "months":
+					#	days_count = 30 * value 
+					#else:
+					#	days_count = 364 * value
 
-				#print "daystoadd " + str(daystoadd)
-				#days_count += daystoadd
+					#print "daystoadd " + str(daystoadd)
+					#days_count += daystoadd
 
-			#	print "Days From today " + str(days_count)
-			#	print "Days from last app " + str(last_app_days)
+				#	print "Days From today " + str(days_count)
+				#	print "Days from last app " + str(last_app_days)
 
-			#	if days_count - last_app_days < 45 and last_app_days > 0:
-			#		continue
-				
-			#	last_app_days = days_count	
+				#	if days_count - last_app_days < 45 and last_app_days > 0:
+				#		continue
+					
+				#	last_app_days = days_count	
 
-				print "-------------------"
-				download_btn = soup_app.find("a", attrs={"class" : "aptweb-button--app"})
-				download_page =  download_btn.div.get("data-direct-download")
+					print "-------------------"
+					download_btn = soup_app.find("a", attrs={"class" : "aptweb-button--app"})
+					download_page =  download_btn.div.get("data-direct-download")
 
-				print "Link to download: " + download_page
+					print "Link to download: " + download_page
 
-				path = fileDir + "/" + app + "_"+version+".apk"
-				apps_to_download[path] = download_page
+					path = fileDir + "/" + app + "_"+version+".apk"
+					apps_to_download[path] = download_page
 
-				csv += path + "," + download_page + "\n"
+					csv += path + "," + download_page + "\n"
 
-				#apk_count += 1
+					#apk_count += 1
+				except:
+					print("Error") 
 
 			next_page = soup.find("div", attrs={"class" : "widget-pagination__next"})
 			print next_page
