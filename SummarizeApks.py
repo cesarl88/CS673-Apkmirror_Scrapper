@@ -6,6 +6,7 @@ if __name__ == '__main__':
 
 	Report = ""
 	if not os.path.exists('./_ValidApps/'):
+		print("Creating: ./_ValidApps/")
 		os.mkdir('./_ValidApps/')
 
 	if len(sys.argv) > 1:
@@ -14,6 +15,7 @@ if __name__ == '__main__':
 		apk_path = os.path.join('.',sys.argv[1]) 
 		
 		if not os.path.exists(apk_path):
+			print("Creating: " + apk_path)
 			os.mkdir(apk_path)
 
 		apk_path = os.path.join(apk_path,app)  

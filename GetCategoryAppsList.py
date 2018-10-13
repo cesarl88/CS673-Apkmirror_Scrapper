@@ -473,6 +473,9 @@ if __name__ == "__main__":
 		Apps.append(sys.argv[3])
 
 
+	#############################
+	# Google Play Store Analysis#
+	#############################	
 	getCategoryAppList(Category, End)
 
 	dirName = fileDir + "/" + Category
@@ -514,7 +517,11 @@ if __name__ == "__main__":
 		f = open(dirName + "/" + Category + ".csv","w+")
 		f.write(str(Content));
 		f.close()
-	#print(Apps)
+	
+	##################	
+	#Loop in all apps# 
+	##################
+
 	search_pages = 1
 	for app in Apps:
 
@@ -526,6 +533,9 @@ if __name__ == "__main__":
 		
 		print("App Search: " + app)
 
+		########################
+		#Search result Analysis#
+		########################
 		if not os.path.exists(dirName + Directory + "/SearchDone"):
 			search_pages = readNext(1, app, Category)
 			print("Search Pages: " + str(search_pages))
@@ -609,7 +619,12 @@ if __name__ == "__main__":
 		else:
 			print("Search Analysis Done. Skiping")
 
-		#continue
+		##Comment line bellow to include downloading Process##
+		continue
+
+		#################
+		#APK Downloading#
+		#################
 		if not os.path.exists(dirName + Directory + "/DownloadProcessDone"):
 			FilePath = dirName + Directory + "/" + app.replace(",","").replace("'","").replace(".","").replace(":","").replace("+","").strip()  + "_Description.csv"
 			with open(FilePath) as csv_file:

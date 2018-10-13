@@ -81,6 +81,7 @@ if __name__ == '__main__':
 	apps_to_download = {}
 
 	csv_path = fileDir + "/" + app + "_url_links"+".csv"
+	Error_path = fileDir + "/" + app + "_Error"+".txt"
 	if not os.path.exists(csv_path):
 
 
@@ -96,6 +97,7 @@ if __name__ == '__main__':
 		isdone = False
 		Next = True
 
+		Errors = ""
 
 		csv = "Version,Link\n"
 
@@ -195,8 +197,11 @@ if __name__ == '__main__':
 					csv += path + "," + download_page + "\n"
 
 					#apk_count += 1
-				except:
-					print("Error") 
+				except Exception as inst:
+					Errors += "------Error-------\n" 
+					Errors += type(inst) +"\n"    # the exception instance
+					Errors += inst.args +"\n"      # arguments stored in .args
+					Errors += inst +"\n" 
 
 			next_page = soup.find("div", attrs={"class" : "widget-pagination__next"})
 			print next_page
@@ -211,6 +216,11 @@ if __name__ == '__main__':
 		f = open(csv_path,"w+")
 		f.write(csv)
 		f.close()
+
+		f = open(Error_path,"w+")
+		f.write(Errors)
+		f.close()
+
 
 		print csv
 	else:
