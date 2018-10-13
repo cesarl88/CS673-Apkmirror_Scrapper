@@ -387,7 +387,12 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				csv_content += Name + ", " + Date +"," +  download_url +","+ download + "," +byDev+ ","+ apk_details_str.decode("utf-8") + '\n'
 				urls.append(download_url + "download")
 				AppNumbers[byDev] += 1
+
+				download_apk(dirName + Directory + "/", Name, download)
+
 				print("Number of versions "+ byDev + " so far: " + str(AppNumbers[byDev]))
+				if AppNumbers[byDev] == 12:
+					break
 
 	#Saving CSV Content
 
@@ -620,7 +625,7 @@ if __name__ == "__main__":
 			print("Search Analysis Done. Skiping")
 
 		##Comment line bellow to include downloading Process##
-		#continue
+		continue
 
 		#################
 		#APK Downloading#
