@@ -298,7 +298,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				for key, value in AppNumbers.items():
 					isdone = value >= 12
 
-				if isdone:
+				if isdone and date_diff.months <= 18:
 					print("Information collected for 2 years stopping process")
 					break
 
