@@ -306,7 +306,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 					difference_in_months = relativedelta(Dates[byDev], appDate).months
 					print("Months Difference: " + str(difference_in_months))
 
-				if(difference_in_months < 1):
+				if(difference_in_months <= 1 and relativedelta(Dates[byDev], appDate).days < 15):
 					print("Less than 1 months ignoring")
 					continue
 
@@ -619,6 +619,10 @@ if __name__ == "__main__":
 		if not os.path.exists(dirName + Directory + "/SearchProcessDone"):
 			ProcessSearchPages(app,Category, 1, search_pages)
 			f = open(dirName + Directory + "/SearchProcessDone","w+")
+			f.write("Done")
+			f.close()
+
+			f = open(dirName + Directory + "/DownloadProcessDone","w+")
 			f.write("Done")
 			f.close()
 		else:
