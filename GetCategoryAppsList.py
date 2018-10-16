@@ -332,8 +332,10 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				# Downloading Variants HTML
 				variant_html_page = get_html_content(url_variants, url_1)
 				#Temp Reading from File for testing
-				#variant_html_file = open(fileDir + "/_Test.html", "r")
-				#variant_html_page = variant_html_file.read()
+				#variant_html_file = open(app_dir + "/_Test.html", "r")
+				#f = open(app_dir +  "_Test.html","w+")
+				#f.write(variant_html_page);
+				#f.close()
 
 				apk_details_str = " "
 				download_url = ""
@@ -375,9 +377,15 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				download = ""
 				if download_url == "":
 					print("Not Variants")
+					temp = url_variants[:len(url_variants) - 1]
+					temp = temp[temp.rindex("/") + 1:].replace("-release","-android-apk-download")
+					print("DOWNLOAD " + temp)
+
+
 					download_url = url_variants
-					download = url_variants
+					download = url_variants + temp + "/download"
 					apk_details_str += "," + analize_apk_description(variant_html_page,  app_dir)
+					print(apk_details_str)
 				else:
 					download = download_url + "download"
 
