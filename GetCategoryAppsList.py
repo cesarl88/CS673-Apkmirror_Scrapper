@@ -306,8 +306,8 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 					difference_in_months = relativedelta(Dates[byDev], appDate).months
 					print("Months Difference: " + str(difference_in_months))
 
-				if(difference_in_months < 2):
-					print("Less than 2 months ignoring")
+				if(difference_in_months < 1):
+					print("Less than 1 months ignoring")
 					continue
 
 				Dates[byDev] = appDate
