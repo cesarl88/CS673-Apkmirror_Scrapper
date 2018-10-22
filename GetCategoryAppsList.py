@@ -247,7 +247,7 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 	csv_content = "App Version, Date,  Details URL, Download URl,DEV, APK Info\n"
 
 	urls = []
-	today = datetime.strptime("January 1, 2016", "%B %d, %Y")#datetime.now()
+	today = datetime.strptime("December 31, 2017", "%B %d, %Y")#datetime.now()
 	#OldDate = today + relativedelta(months= +2)
 	AppNumbers = {}
 	Dates = {}
@@ -294,6 +294,9 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				date_diff = relativedelta(today, appDate)
 
 				print("Dates Difference: Years(" + str(date_diff.years) + "), Months(" +str(date_diff.months)+")")
+
+				if date_diff.days < 0 or date_diff.years < 0 or date_diff.months < 0:
+					continue
 
 				for key, value in AppNumbers.items():
 					isdone = value >= 12
