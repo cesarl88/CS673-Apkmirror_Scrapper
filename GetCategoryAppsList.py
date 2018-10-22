@@ -377,20 +377,28 @@ def ProcessSearchPages(AppName, category,Start_SearchPages, SearchPages):
 				download = ""
 				if download_url == "":
 					print("Not Variants")
-					temp = url_variants[:len(url_variants) - 1]
-					temp = temp[temp.rindex("/") + 1:].replace("-release","-android-apk-download")
-					print("DOWNLOAD " + temp)
 
+					dbtn = soup_variants.find("a", attrs={"class": "downloadButton"})
+					if dbtn:
+						download = 'https://www.apkmirror.com/' + dbtn.get('href')
+						print download
+					else:
 
-					download_url = url_variants
-					download = url_variants + temp + "/download"
+						temp = url_variants[:len(url_variants) - 1]
+						temp = temp[temp.rindex("/") + 1:].replace("-release","-android-apk-download")
+						print("DOWNLOAD " + temp)
+						download_url = url_variants
+						download = url_variants + temp + "/download"
+						download_url = download_url.replace("//", "/")	
+						download = download.replace("//", "/")	
+
 					apk_details_str += "," + analize_apk_description(variant_html_page,  app_dir)
 					print(apk_details_str)
 				else:
 					download = download_url + "download"
 
-				download_url = download_url.replace("//", "/")	
-				download = download.replace("//", "/")	
+					download_url = download_url.replace("//", "/")	
+					download = download.replace("//", "/")	
 
 				csv_content += Name + ", " + Date +"," +  download_url +","+ download + "," +byDev+ ","+ apk_details_str.decode("utf-8") + '\n'
 				urls.append(download_url + "download")

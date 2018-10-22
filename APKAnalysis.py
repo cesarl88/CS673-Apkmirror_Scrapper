@@ -76,12 +76,12 @@ def main(LocalPath, Category):
 
 			t = (pr / float((size))) * 100 *  (1 / float(total)) + prog
 
-			print_same_line("App Completed: " + str(t) + "%")
+			print_same_line("Completed: " + str(t) + "%")
 			pr += 1
 
 			p_status = p.wait()
 
-			if output:
+			if output and len(output) > 3:
 				try:
 					out = json.loads(str(output))
 					for x in out:

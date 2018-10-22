@@ -56,17 +56,21 @@ def main(LocalPath, Category, option):
 	total_metrics = {}
 	headers = ""
 
+	FailList = ""
 
 	headers_printed = False	
 	for app in cat_apps:
 		
+		FailList += app + "-------\n" 
+
 		app_path = os.path.join(LocalPath,app)
 		print_same_line("Analizing " + app, 2)
 		print("")
 		AppsAnlazed += app + "\n"
 
 
-		
+		pr = 0
+		smali_count = 0
 		csv_file = ""
 
 		if option == 0:
@@ -74,18 +78,43 @@ def main(LocalPath, Category, option):
 			#print(apks)
 			size = len(apks)
 			for i in range(size - 1):
+				if smali_count == 12:
+					break
+
+				t = (pr / float((size))) * 100 *  (1 / float(total)) + prog
+
+				print_same_line("Completed: " + str(t) + "%")
+
 				version0 = os.path.join(app_path,apks[i])
+				smali = version0 + ".smali"
+				if os.path.exists(smali): 
+					smali_count+=1
+					continue
+
 				Command = "sa-disassemble '" + version0 +"'"
-				print("Command " + Command)
+				#print("Command " + Command)
+				
 				try:
-					os.system(Command)
-				except KeyboardInterrupt as e:
-					print('Interrupted')
+					p = subprocess.Popen(Command, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
+					(output, err) = p.communicate()
+					p_status = p.wait()
+					smali_count+=1
+				except KeyboardInterrupt:
+					print("Exiting")
 					sys.exit(0)
+				except Exception as e:
+					FailList += version0 + '\n'
+					#print(FailList)
+
+			if smali_count < 12:
+				FailList+= "app has " + smali_count " smali files, Missing "+str(12 - smali_count)+"\n"
+
+			smali_count = 0
 				
 		elif option == 2:
 			apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".smali")]
 			#print(apks)
+			apks = sorted(apks)
 			size = len(apks)
 
 			pkg = ""
@@ -98,8 +127,6 @@ def main(LocalPath, Category, option):
 				version0 = os.path.join(app_path,apks[i])
 				version1 = os.path.join(app_path,apks[nextI])
 				print("Comparing %s against %s" % (version0, version1))
-
-
 
 				try:
 
@@ -164,23 +191,31 @@ def main(LocalPath, Category, option):
 			File.write(headers + '\n' + csv_file)
 			File.close()
 
+		if option == 0:
+			File = open(LocalPath + "/Category_Failed.txt", "+w")
+			File.write(FailList)
+			File.close()
+		else:
+			total_csv = ""
+			for key, value in total_metrics.items():
+				total_csv += value + ','
+			
 
-		total_csv = ""
-		for key, value in total_metrics.items():
-			total_csv += value + ','
-		
+			File = open(LocalPath + "/Category_Summary.txt", "+w")
+			File.write(headers + '\n' + total_csv)
+			File.close()
 
-		File = open(LocalPath + "/Category_Summary.txt", "+w")
-		File.write(headers + '\n' + total_csv)
-		File.close()
-
+		prog = (progress / float(total)) * 100.00
+		progress += 1
 
 				#Command = 'sa-metrics ' + version0 + ' '+ version1 +' -e ../../exclusionlist/exclusionlist/exclusionlist.txt ../../exclusionlist/exclusionlist/Merge.txt > version' + str(i) + '_version' + str(nextI) + '.csv' 
 
 				##print_same_line(Command)
 				#os.system(Command)
 
+	Elapsed_time = time.time() - AppStartDownloadTime
 
+	print('Elapsed Time: ' + str(Elapsed / 60) + " min")
 	return 0
 
 
