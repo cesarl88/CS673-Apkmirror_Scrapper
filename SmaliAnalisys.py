@@ -1,4 +1,4 @@
-from smalanalysis.smali.SmaliProject import SmaliProject
+from smalanalysis.smali import SmaliObject, ChangesTypes, SmaliProject, Metrics
 from smalanalysis.tools.commands import queryAaptForPackageName
 
 import sys, time 
@@ -49,7 +49,7 @@ def main(LocalPath, Category, option):
 
 	#exclude list
 
-	exclude_lists = ['../../exclusionlist/exclusionlist/exclusionlist.txt' '../../exclusionlist/exclusionlist/Merge.txt']
+	exclude_lists = ['./exclusionlist/exclusionlist.txt', './exclusionlist/Merge.txt']
 
 
 	set_total_metrics = False	
@@ -111,7 +111,7 @@ def main(LocalPath, Category, option):
 
 			smali_count = 0
 				
-		elif option == 2:
+		elif option == 1:
 			apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".smali")]
 			#print(apks)
 			apks = sorted(apks)
@@ -119,27 +119,29 @@ def main(LocalPath, Category, option):
 
 			pkg = ""
 			if size > 0:
-				pkg = queryAaptForPackageName(os.path.join(app_path,apks[0]))
+				pkg = queryAaptForPackageName(os.path.join(app_path,apks[0]).replace(".smali",""))
 
 
 			for i in range(size - 1):
 				nextI = i + 1
 				version0 = os.path.join(app_path,apks[i])
 				version1 = os.path.join(app_path,apks[nextI])
-				print("Comparing %s against %s" % (version0, version1))
+				print("Comparing %s against %s : Package: %s" % (version0, version1,pkg))
 
 				try:
 
-					old = SmaliProject()
-					old.parseProject(version0, pkg, exclude_lists)
+					old = SmaliProject.SmaliProject()
+					old.parseProject(version0, str(pkg), exclude_lists)
 
+					print("1")
 					if old.isProjectObfuscated():
 						raise Metrics.ProjectObfuscatedException()
 
 					mold, moldin = Metrics.countMethodsInProject(old)
 
-					new = SmaliProject()
-					new.parseProject(args.smaliv2, pkg, args.exclude_lists, args.include_lists, args.include_unpackaged)
+					new = SmaliProject.SmaliProject()
+					new.parseProject(version1, str(pkg), exclude_lists)
+					print("2")
 				    #parseProject(new, args.smaliv2, pkg, args.exclude_lists, args.include_lists, args.include_unpackaged)
 
 					mnew, mnewin = Metrics.countMethodsInProject(new)
@@ -148,18 +150,22 @@ def main(LocalPath, Category, option):
 						raise Metrics.ProjectObfuscatedException()
 
 					diff = old.differences(new, [])
-
+					print(diff)
 					metrics = {}
 
 					Metrics.initMetricsDict("", metrics)
 					metrics["#M-"] = mold + moldin
 					metrics["#M+"] =  mnew + mnewin
-					Metrics.computeMetrics(diff, metrics, "", not args.fulllinesofcode, args.aggregateoperators)
+					Metrics.computeMetrics(diff, metrics, "", True, False)
 
-				except Exception as e:
+				except Metrics.ProjectObfuscatedException:
 					print("This project is obfuscated. Unable to proceed.", file=sys.stderr)
 					continue
+				except Exception as e:
+					print(e)
+					sys.exit(0)
 				
+				print("Done")
 
 				bases = [""]
 
@@ -176,34 +182,38 @@ def main(LocalPath, Category, option):
 							headers += '\n'
 						headers_printed = True
 
-		        #print(b, end=',')
+				print(b, end=',')
 
 
 				for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
-					csv_file += metrics[k] +  ','
+					csv_file += str(metrics[k]) +  ','
 					total_metrics[k] += metrics[k] 
+
 
 
 				csv_file += '|'.join(metrics["{}addedLines".format(b)]) +  ','
 				csv_file += '|'.join(metrics["{}removedLines".format(b)]) +  ','	
 
+				print (csv_file)
+
+			print("Here")
 			File = open(LocalPath + "/" + app + "_Summary.txt", "+w")
 			File.write(headers + '\n' + csv_file)
 			File.close()
 
-		if option == 0:
-			File = open(LocalPath + "/Category_Failed.txt", "+w")
-			File.write(FailList)
-			File.close()
-		else:
-			total_csv = ""
-			for key, value in total_metrics.items():
-				total_csv += value + ','
-			
+	if option == 0:
+		File = open(LocalPath + "/Category_Failed.txt", "+w")
+		File.write(FailList)
+		File.close()
+	else:
+		total_csv = ""
+		for key, value in total_metrics.items():
+			total_csv += value + ','
+		
 
-			File = open(LocalPath + "/Category_Summary.txt", "+w")
-			File.write(headers + '\n' + total_csv)
-			File.close()
+		File = open(LocalPath + "/Category_Summary.txt", "+w")
+		File.write(headers + '\n' + total_csv)
+		File.close()
 
 		prog = (progress / float(total)) * 100.00
 		progress += 1
@@ -215,7 +225,7 @@ def main(LocalPath, Category, option):
 
 	Elapsed_time = time.time() - AppStartDownloadTime
 
-	print('Elapsed Time: ' + str(Elapsed / 60) + " min")
+	print('Elapsed Time: ' + str(Elapsed_time / 60) + " min")
 	return 0
 
 

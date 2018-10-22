@@ -81,24 +81,24 @@ def main(LocalPath, Category):
 
 			p_status = p.wait()
 
-			if output and len(output) > 3:
+			if len(str(output)) > 3:
 				try:
 					out = json.loads(str(output))
 					for x in out:
 						xx= out[x]
 						for y in xx:
-							if y == 'packer' or y == 'obfuscator':
+							if y == 'packer' or y == 'obfuscator' or y == 'anti_disassembly':
 								ObfuscatedApps+= apk + "\n"
 								apks_obf += 1
 
 				except Exception as e:
-					print(output)
+					print("Exception")
 					CorruptedApps +=  cmd + " => "+ str(output)+" \n"
 					apks_corr += 1
 
 				
 			else:
-				print(output)
+				print(str(len(output)))
 				CorruptedApps +=  cmd + " => "+ str(output)+" \n------\n"
 				apks_corr += 1
 
