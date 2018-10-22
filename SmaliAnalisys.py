@@ -1,0 +1,221 @@
+from smalanalysis.smali.SmaliProject import SmaliProject
+from smalanalysis.tools.commands import queryAaptForPackageName
+
+import sys, time 
+import os
+import subprocess
+import json
+
+
+CURSOR_UP_ONE = '\x1b[1A'
+ERASE_LINE = '\x1b[2K'
+
+
+def delete_last_lines(n=1):
+    for _ in range(n):
+        sys.stdout.write(CURSOR_UP_ONE)
+        sys.stdout.write(ERASE_LINE)
+
+
+def print_same_line(str, n = 1):
+	delete_last_lines(n)
+	print(str)
+
+	
+
+def main(LocalPath, Category, option):
+
+
+	print("Working on " + LocalPath)
+
+	if not os.path.exists(LocalPath):
+		print("LocalPath does not exists " + LocalPath)
+		return 0
+
+	AppStartDownloadTime = time.time()
+
+	cat_apps = [dI for dI in os.listdir(LocalPath) if os.path.isdir(os.path.join(LocalPath,dI))]	
+
+	ObfuscatedApps = ""
+	Report = ""
+	CorruptedApps = ""
+	AppsAnlazed = ""
+
+	apks_num = 0
+
+	total = len(cat_apps)
+	progress = 1
+	prog = 0
+
+	#exclude list
+
+	exclude_lists = ['../../exclusionlist/exclusionlist/exclusionlist.txt' '../../exclusionlist/exclusionlist/Merge.txt']
+
+
+	set_total_metrics = False	
+	total_metrics = {}
+	headers = ""
+
+
+	headers_printed = False	
+	for app in cat_apps:
+		
+		app_path = os.path.join(LocalPath,app)
+		print_same_line("Analizing " + app, 2)
+		print("")
+		AppsAnlazed += app + "\n"
+
+
+		
+		csv_file = ""
+
+		if option == 0:
+			apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")]
+			#print(apks)
+			size = len(apks)
+			for i in range(size - 1):
+				version0 = os.path.join(app_path,apks[i])
+				Command = "sa-disassemble '" + version0 +"'"
+				print("Command " + Command)
+				try:
+					os.system(Command)
+				except KeyboardInterrupt as e:
+					print('Interrupted')
+					sys.exit(0)
+				
+		elif option == 2:
+			apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".smali")]
+			#print(apks)
+			size = len(apks)
+
+			pkg = ""
+			if size > 0:
+				pkg = queryAaptForPackageName(os.path.join(app_path,apks[0]))
+
+
+			for i in range(size - 1):
+				nextI = i + 1
+				version0 = os.path.join(app_path,apks[i])
+				version1 = os.path.join(app_path,apks[nextI])
+				print("Comparing %s against %s" % (version0, version1))
+
+
+
+				try:
+
+					old = SmaliProject()
+					old.parseProject(version0, pkg, exclude_lists)
+
+					if old.isProjectObfuscated():
+						raise Metrics.ProjectObfuscatedException()
+
+					mold, moldin = Metrics.countMethodsInProject(old)
+
+					new = SmaliProject()
+					new.parseProject(args.smaliv2, pkg, args.exclude_lists, args.include_lists, args.include_unpackaged)
+				    #parseProject(new, args.smaliv2, pkg, args.exclude_lists, args.include_lists, args.include_unpackaged)
+
+					mnew, mnewin = Metrics.countMethodsInProject(new)
+
+					if new.isProjectObfuscated():
+						raise Metrics.ProjectObfuscatedException()
+
+					diff = old.differences(new, [])
+
+					metrics = {}
+
+					Metrics.initMetricsDict("", metrics)
+					metrics["#M-"] = mold + moldin
+					metrics["#M+"] =  mnew + mnewin
+					Metrics.computeMetrics(diff, metrics, "", not args.fulllinesofcode, args.aggregateoperators)
+
+				except Exception as e:
+					print("This project is obfuscated. Unable to proceed.", file=sys.stderr)
+					continue
+				
+
+				bases = [""]
+
+				if not set_total_metrics:
+					total_metrics = dict.fromkeys(metrics.keys(), 0)
+
+				
+				for b in bases:
+					if not headers_printed:
+						for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
+							headers += k[len(b):] + ','
+							headers += "addedLines"  +  ','
+							headers += "removedLines" +  ','
+							headers += '\n'
+						headers_printed = True
+
+		        #print(b, end=',')
+
+
+				for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
+					csv_file += metrics[k] +  ','
+					total_metrics[k] += metrics[k] 
+
+
+				csv_file += '|'.join(metrics["{}addedLines".format(b)]) +  ','
+				csv_file += '|'.join(metrics["{}removedLines".format(b)]) +  ','	
+
+			File = open(LocalPath + "/" + app + "_Summary.txt", "+w")
+			File.write(headers + '\n' + csv_file)
+			File.close()
+
+
+		total_csv = ""
+		for key, value in total_metrics.items():
+			total_csv += value + ','
+		
+
+		File = open(LocalPath + "/Category_Summary.txt", "+w")
+		File.write(headers + '\n' + total_csv)
+		File.close()
+
+
+				#Command = 'sa-metrics ' + version0 + ' '+ version1 +' -e ../../exclusionlist/exclusionlist/exclusionlist.txt ../../exclusionlist/exclusionlist/Merge.txt > version' + str(i) + '_version' + str(nextI) + '.csv' 
+
+				##print_same_line(Command)
+				#os.system(Command)
+
+
+	return 0
+
+
+if __name__ == '__main__':
+
+	if len(sys.argv) < 3:
+		print("Usage")
+		print("python SmaliAnalysis.py 'Category' 'option'")
+	else:
+
+		Category = sys.argv[1]
+		option = int(sys.argv[2])
+		LocalPath = os.path.join('.',Category) 
+		main(LocalPath, Category, option)
+
+	
+
+	#APK = "/Users/cesarsalazar/Documents/NJIT/Fall 2018/CS 673/Final Project/APKMirrorScrapper/COMMUNICATION/Plus Messenger/plus-messenger-3-13-1-9-release.apk"
+
+	#package = queryAaptForPackageName(APK)
+	#print(package);
+
+	#proj_A = SmaliProject()
+	#proj_A.parseProject('/Users/cesarsalazar/Documents/NJIT/Fall 2018/CS 673/Final Project/APKMirrorScrapper/COMMUNICATION/Plus Messenger/plus-messenger-3-13-1-9-release.apk.smali')
+	#print(proj_A.isProjectObfuscated())
+	
+	#proj_B = SmaliProject()
+	#proj_B.parseProject('/Users/cesarsalazar/Documents/NJIT/Fall 2018/CS 673/Final Project/APKMirrorScrapper/COMMUNICATION/Plus Messenger/plus-messenger-4-2-1-1-release.apk.smali')
+	#print(proj_B.isProjectObfuscated())
+#'com.bsb.hike'
+	#print(proj_A.differences(proj_B,[]))
+
+
+  
+
+ #python3 sa-metrics '/Users/cesarsalazar/Documents/NJIT/Fall 2018/CS 673/Final Project/APKMirrorScrapper/COMMUNICATION/Plus Messenger/plus-messenger-3-13-1-9-release.apk.smali' '/Users/cesarsalazar/Documents/NJIT/Fall 2018/CS 673/Final Project/APKMirrorScrapper/COMMUNICATION/Plus Messenger/plus-messenger-4-2-1-1-release.apk.smali' 'org.telegram.plus'
+ #python3 sa-metrics '/Users/cesarsalazar/Documents/NJIT/Fall 2018/CS 673/Final Project/APKMirrorScrapper/COMMUNICATION/Hike Messenger/hike-4-12-2-release.apk.smali' '/Users/cesarsalazar/Documents/NJIT/Fall 2018/CS 673/Final Project/APKMirrorScrapper/COMMUNICATION/Hike Messenger/hike-4-9-1-release.apk.smali' 'com.bsb.hike'
+
