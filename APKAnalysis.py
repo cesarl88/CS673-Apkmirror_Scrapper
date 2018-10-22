@@ -67,6 +67,9 @@ def main(LocalPath, Category):
 		size = len(apks)
 
 		pr = 0
+		apks_obf = 0
+		apks_corr = 0
+
 
 		for apk in apks:
 
@@ -81,13 +84,13 @@ def main(LocalPath, Category):
 
 			p_status = p.wait()
 
-			if len(str(output)) > 3:
+			#if len(str(output)) > 3:
 				try:
 					out = json.loads(str(output))
 					for x in out:
 						xx= out[x]
 						for y in xx:
-							if y == 'packer' or y == 'obfuscator' or y == 'anti_disassembly':
+							if "anti" in y or y == 'packer' or y == 'obfuscator' or y == 'anti_disassembly' or y =='anti_vm' or  y == 'anti_debug':
 								ObfuscatedApps+= apk + "\n"
 								apks_obf += 1
 
@@ -110,6 +113,11 @@ def main(LocalPath, Category):
 		Report+= "Number of APKS Good to go("+str(len(apks) - apks_obf - apks_corr)+")" + "\n"
 		Report+= "Number of APKS Packed("+str(apks_obf)+")\n\n"
 		Report+= "Number of APKS Corrupted("+str(apks_corr)+")\n\n"
+
+		if len(apks) - apks_obf - apks_corr < 8:
+			os.system("Obfuscated > '" +app_path+ "/Obfuscated.txt'")
+
+
 
 		prog = (progress / float(total)) * 100.00
 		progress += 1

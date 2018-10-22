@@ -58,6 +58,7 @@ def main(LocalPath, Category, option):
 
 	FailList = ""
 
+
 	headers_printed = False	
 	for app in cat_apps:
 		
@@ -112,15 +113,22 @@ def main(LocalPath, Category, option):
 			smali_count = 0
 				
 		elif option == 1:
+
+			#if os.path.exists(app_path +"/Obfuscated.txt"): 
+			#	print("Not enough Apps majority are obfuscated")
+			#	continue
+
+
 			apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".smali")]
 			#print(apks)
 			apks = sorted(apks)
 			size = len(apks)
-
+			print("Size " + str(size))
 			pkg = ""
 			if size > 0:
 				pkg = queryAaptForPackageName(os.path.join(app_path,apks[0]).replace(".smali",""))
 
+			print("Package: " + str(pkg))
 
 			for i in range(size - 1):
 				nextI = i + 1
@@ -128,10 +136,37 @@ def main(LocalPath, Category, option):
 				version1 = os.path.join(app_path,apks[nextI])
 				print("Comparing %s against %s : Package: %s" % (version0, version1,pkg))
 
+
+				# try:
+				# 	Command = "sa-metrics '" + version0 + "' '" + version1 + "' '" + str(pkg) + "' -e " + exclude_lists[0] + " " + exclude_lists[1]
+				# 	print(Command)
+				# 	p = subprocess.Popen(Command, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
+				# 	(output, err) = p.communicate()
+				# 	p_status = p.wait()
+
+
+				# 	t = str(output).split('removedLines')
+				# 	print("len " + str(len(t)))
+
+				# 	if not headers_printed:
+				# 		csv_file += t[0] + '\n' + t[1] + '\n'
+				# 		headers_printed = True
+				# 	else:
+				# 		csv_file += t[1] + '\n'
+
+				# 	#print(csv_file)
+
+				# except KeyboardInterrupt:
+				# 	print("Exiting")
+				# 	sys.exit(0)
+				# except Exception as e:
+				# 	print(e)
+				# 	sys.exit(0)
+
 				try:
 
 					old = SmaliProject.SmaliProject()
-					old.parseProject(version0, str(pkg), exclude_lists)
+					old.parseProject(version0, None, exclude_lists, None, True)
 
 					print("1")
 					if old.isProjectObfuscated():
@@ -140,7 +175,7 @@ def main(LocalPath, Category, option):
 					mold, moldin = Metrics.countMethodsInProject(old)
 
 					new = SmaliProject.SmaliProject()
-					new.parseProject(version1, str(pkg), exclude_lists)
+					new.parseProject(version1, None, exclude_lists, None, True)
 					print("2")
 				    #parseProject(new, args.smaliv2, pkg, args.exclude_lists, args.include_lists, args.include_unpackaged)
 
@@ -150,7 +185,7 @@ def main(LocalPath, Category, option):
 						raise Metrics.ProjectObfuscatedException()
 
 					diff = old.differences(new, [])
-					print(diff)
+					#print(diff)
 					metrics = {}
 
 					Metrics.initMetricsDict("", metrics)
@@ -171,18 +206,19 @@ def main(LocalPath, Category, option):
 
 				if not set_total_metrics:
 					total_metrics = dict.fromkeys(metrics.keys(), 0)
-
+					set_total_metrics = True
 				
 				for b in bases:
 					if not headers_printed:
 						for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
 							headers += k[len(b):] + ','
-							headers += "addedLines"  +  ','
-							headers += "removedLines" +  ','
-							headers += '\n'
+						
+						headers += "addedLines"  +  ','
+						headers += "removedLines"
+						headers += '\n'
 						headers_printed = True
 
-				print(b, end=',')
+				#print(b, end=',')
 
 
 				for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
@@ -194,10 +230,9 @@ def main(LocalPath, Category, option):
 				csv_file += '|'.join(metrics["{}addedLines".format(b)]) +  ','
 				csv_file += '|'.join(metrics["{}removedLines".format(b)]) +  ','	
 
-				print (csv_file)
-
-			print("Here")
-			File = open(LocalPath + "/" + app + "_Summary.txt", "+w")
+				csv_file += '\n'
+			
+			File = open(LocalPath + "/" + app + "/"+app+"_Summary.csv", "+w")
 			File.write(headers + '\n' + csv_file)
 			File.close()
 
@@ -207,12 +242,14 @@ def main(LocalPath, Category, option):
 		File.close()
 	else:
 		total_csv = ""
+		total_avg = ""
 		for key, value in total_metrics.items():
-			total_csv += value + ','
+			total_csv += str(value) + ','
+			total_avg += str(value / total) + ','
 		
 
-		File = open(LocalPath + "/Category_Summary.txt", "+w")
-		File.write(headers + '\n' + total_csv)
+		File = open(LocalPath + "/Category_Summary.csv", "+w")
+		File.write(headers + '\n' + total_csv + '\n' + total_avg)
 		File.close()
 
 		prog = (progress / float(total)) * 100.00
