@@ -107,7 +107,7 @@ def main(LocalPath, Category, option):
 					#print(FailList)
 
 			if smali_count < 12:
-				FailList+= "app has " + smali_count " smali files, Missing "+str(12 - smali_count)+"\n"
+				FailList+= "app has " + str(smali_count) +" smali files, Missing "+str(12 - smali_count)+"\n"
 
 			smali_count = 0
 				
