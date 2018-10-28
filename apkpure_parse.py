@@ -34,13 +34,15 @@ class ComplexEncoder(json.JSONEncoder):
 
 class AppVersion:
 
-	def __init__(self, version, url, date, size):	
+	def __init__(self, version, url, date, size, android):	
 		self.version = version
 		self.url = url
 		self.date = date
 		self.is_downloaded = False
 		self.size = size
 		self.download_link = ""
+		self.android = android
+
 
 	def get_date(self):
 		return datetime.strptime(self.date, "%Y-%m-%d")
@@ -129,11 +131,13 @@ class Application:
 			link = soup.find("a", attrs={"id":"download_link"})
 			apk.download_link = link.get("href")
 
-			print("Downloading " + self.name + "_" + apk.version.replace(".", "_"))
+			print(apk.version)
+			print(self.name)
+			print("Downloading " + self.name+ "=>" + apk.version.replace(".", "_").replace(" ","_"))
 			
 
 			apk_file = requests.get(apk.download_link)
-			appDir = os.path.join(appDir, self.name + "_" + apk.version.replace(".", "_"))
+			appDir = os.path.join(appDir, apk.version.replace(".", "_").replace(" ","_"))
 			print("saving into "+ appDir + ".apk")
 
 			f = open(appDir + ".apk","w+")
@@ -143,6 +147,7 @@ class Application:
 			apk.is_downloaded = True
 
 			if(self.is_completed()):
+				print(str(max_apks) + " downloaded")
 				break
 
 			print("Waiting " + str(sleep_time) + " seconds")
@@ -224,7 +229,17 @@ def scrap_version(app):
 			v_a = v_item.find("div", attrs={"class" : "ver-item-a"})
 			v_date = v_a.find("p", attrs={"update-on"})
 
-			v_app = AppVersion(v_name.string, url, v_date.string, v_size.string)
+
+			v_info = version.find("div", attrs={"class" : "ver-info"})
+			v_info_name = v_info.find("div", attrs={"class":"ver-info-top"})
+			name = str(v_info_name.contents[0]).replace("<strong>","").replace("</strong>","") + str(v_info_name.contents[1])
+			#sys.exit(0)
+
+			v_info_m = version.find("div", attrs={"class" : "ver-info-m"})
+			all_p = v_info.find_all("p")
+			android = str(all_p[1]).replace("<p>","").replace("<strong>","").replace("</p>","").replace("</strong>","").replace("Requires Android: ","")
+			
+			v_app = AppVersion(name, url, v_date.string, v_size.string, android)
 
 			app.versions.append(v_app)
 
@@ -297,7 +312,7 @@ def load_json(category):
 			 	versions = []
 				
 				for v in app["versions"]:
-					ver = AppVersion(v["version"], v["url"], v["date"], v["size"])
+					ver = AppVersion(v["version"], v["url"], v["date"], v["size"], v["android"])
 					versions.append(ver)
 					
 				a.versions = versions
