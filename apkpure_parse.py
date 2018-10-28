@@ -76,13 +76,13 @@ class Application:
 		valid = []
 		date = m_date 
 		for v in self.versions:
-			#print(v.version)
-			date_diff = relativedelta(m_date, v.get_date())
+			date_diff = relativedelta(date, v.get_date())
 
 			if(date_diff.days > days):
-				if(date_diff.months > months):
+				if(date_diff.months > months and date_diff.years >= 0):
 					valid.append(v)
 					date = v.get_date()
+					#print("adding")
 
 
 		print(" => " + str(len(valid)))
@@ -420,7 +420,7 @@ if __name__ == '__main__':
 	print("About to download apks")
 	for app in Apps:
 		print("Checking: " + app.name)
-		if(app.is_valid()):
+		if(app.is_valid() and not app.is_completed()):
 			app.download_apks()
 
 
