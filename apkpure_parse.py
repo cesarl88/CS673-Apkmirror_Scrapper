@@ -24,6 +24,7 @@ max_apks = 12
 months = 1
 days = 1
 
+
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj,'reprJSON'):
@@ -355,6 +356,11 @@ if __name__ == '__main__':
 
 
 
+	parser.add_argument('--sleep-time', '-sleep', type=int,
+                    help='Days between each download')
+
+
+
 
 
 	args = parser.parse_args()
@@ -382,6 +388,11 @@ if __name__ == '__main__':
 	if args.days:
 		days = args.days
 		print("days: " + str(days))
+
+	if args.sleep_time:
+		sleep_time = sleep_time.days
+		print("sleep_time: " + str(sleep_time))
+
 
 
 	print("Loading Json")
