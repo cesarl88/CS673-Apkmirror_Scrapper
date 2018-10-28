@@ -390,7 +390,7 @@ if __name__ == '__main__':
 		print("days: " + str(days))
 
 	if args.sleep_time:
-		sleep_time = sleep_time.days
+		sleep_time = args.sleep_time
 		print("sleep_time: " + str(sleep_time))
 
 
