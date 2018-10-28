@@ -111,6 +111,7 @@ class Application:
 			if(apk.is_downloaded):
 				continue
 
+
 			appDir = os.path.join(fileDir, self.name)
 
 			if not os.path.exists(appDir):
@@ -139,6 +140,10 @@ class Application:
 			f.close()
 
 			apk.is_downloaded = True
+
+			if(self.is_completed())
+				break
+
 			print("Waiting " + str(sleep_time) + " seconds")
 			time.sleep(sleep_time)
 
