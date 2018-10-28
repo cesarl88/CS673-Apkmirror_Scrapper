@@ -86,6 +86,43 @@ TOOLS(19).txt
 where TOOLs is the category and 19 the number of apps that have the 12 apks versions.
 
 
+<h>apkpure_parse.py</h>h>
+
+usage: apkpure_parse.py [-h] [--start-page START_PAGE] [--end-page END_PAGE]
+                        [--max-date MAX_DATE] [--min-apks MIN_APKS]
+                        [--max-apks MAX_APKS] [--months MONTHS] [--days DAYS]
+                        category
+
+Process some integers.
+
+positional arguments:
+  category              Category to search
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --start-page START_PAGE, -s START_PAGE
+                        Start Search Page
+  --end-page END_PAGE, -e END_PAGE
+                        End Search Page
+  --max-date MAX_DATE, -d MAX_DATE
+                        Maximum valid date to start downloading apks. Default
+                        2016-12-31
+  --min-apks MIN_APKS, -min MIN_APKS
+                        Minimum number of apks to be a valid app
+  --max-apks MAX_APKS, -max MAX_APKS
+                        Maximum number of apks to be a valid app
+  --months MONTHS, -months MONTHS
+                        Months between each download
+  --days DAYS, -days DAYS
+                        Days between each download
+
+
+
+Sample:
+
+python apkpure_parse.py tools -s 1 -e 2 -d '2016-12-31' -min 10 -max 12 -months 1 -days 1
+
+
 
 
 
