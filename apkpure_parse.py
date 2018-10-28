@@ -142,7 +142,7 @@ class Application:
 
 			apk.is_downloaded = True
 
-			if(self.is_completed())
+			if(self.is_completed()):
 				break
 
 			print("Waiting " + str(sleep_time) + " seconds")
