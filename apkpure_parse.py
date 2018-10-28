@@ -357,7 +357,7 @@ if __name__ == '__main__':
 
 
 	parser.add_argument('--sleep-time', '-sleep', type=int,
-                    help='Days between each download')
+                    help='Sleep time between each download')
 
 
 
