@@ -122,6 +122,8 @@ class Application:
 		for apk in valid_apks:
 			
 			if(apk.is_downloaded):
+				print(apk.version + " is being ignored becuase it is already downloaded")
+				#time.sleep(2)
 				continue
 
 
@@ -143,11 +145,11 @@ class Application:
 
 			print(apk.version)
 			print(self.name)
-			print("Downloading " + self.name+ "=>" + apk.version.replace(".", "_").replace(" ","_"))
+			print("Downloading " + self.name+ "=>" + apk.version.replace(".", "_").replace(" ","_").decode("utf-8"))
 			
 
 			apk_file = requests.get(apk.download_link)
-			appDir = os.path.join(appDir, apk.version.replace(".", "_").replace(" ","_"))
+			appDir = os.path.join(appDir, apk.version.replace(".", "_").replace(" ","_").decode("utf-8"))
 			print("saving into "+ appDir + ".apk")
 
 			f = open(appDir + ".apk","w+")
@@ -431,8 +433,13 @@ if __name__ == '__main__':
 	print("About to download apks")
 	for app in Apps:
 		print("Checking: " + app.name)
-		if(app.is_valid() and not app.is_completed()):
-			app.download_apks()
+		if(app.is_valid()):
+			if not app.is_completed():
+				app.download_apks()
+			else:
+				print("Already downloaded")
+		else:
+			print("Does not meet criteria")
 
 
 		dump_json(args.category)
