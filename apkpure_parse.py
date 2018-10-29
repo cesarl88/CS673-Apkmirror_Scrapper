@@ -68,15 +68,25 @@ class Application:
 			if v.is_downloaded:
 				downloaded += 1
 
-		return downloaded >= max_apks
+		return downloaded >= min_apks
 
 	def get_valid_apks(self):
 
 		m_date = datetime.strptime(max_Date, "%Y-%m-%d")
 		valid = []
 		date = m_date 
+		# print("Stating Date " + str(date))
+		# time.sleep(3)
 		for v in self.versions:
 			date_diff = relativedelta(date, v.get_date())
+
+
+			# print("date " + str(date))
+			# print("v date " + str(v.date))
+			# print("Years difference " + str(date_diff.years))
+			# print("Years difference " + str(date_diff.years))
+			# print("Months difference " + str(date_diff.months))
+			# print("Days difference " + str(date_diff.days))
 
 			if(date_diff.days > days):
 				if(date_diff.months > months and date_diff.years >= 0):
@@ -85,7 +95,7 @@ class Application:
 					#print("adding")
 
 
-		print(" => " + str(len(valid)))
+		print("Number of Valid APKS => " + str(len(valid)))
 		return valid
 
 	def is_valid(self):
@@ -239,7 +249,7 @@ def scrap_version(app):
 			all_p = v_info.find_all("p")
 			android = str(all_p[1]).replace("<p>","").replace("<strong>","").replace("</p>","").replace("</strong>","").replace("Requires Android: ","")
 			
-			v_app = AppVersion(name, url, v_date.string, v_size.string, android)
+			v_app = AppVersion(name.decode("utf-8"), url, v_date.string, v_size.string, android)
 
 			app.versions.append(v_app)
 
@@ -273,7 +283,7 @@ def download_category_page(category, page, max_page):
 
 			url_div = "https://apkpure.com" + app.find("a").get("href") + "/versions"
 			
-			App = Application(category, name_div, url_div)
+			App = Application(category, name_div.decode("utf-8"), url_div)
 
 			print("scrapping app: " + App.name)
 			scrap_version(App)
@@ -313,6 +323,7 @@ def load_json(category):
 				
 				for v in app["versions"]:
 					ver = AppVersion(v["version"], v["url"], v["date"], v["size"], v["android"])
+					ver.is_downloaded = v["is_downloaded"]
 					versions.append(ver)
 					
 				a.versions = versions
