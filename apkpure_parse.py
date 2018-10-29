@@ -287,7 +287,7 @@ def download_category_page(category, page, max_page):
 
 			url_div = "https://apkpure.com" + app.find("a").get("href") + "/versions"
 			
-			App = Application(category, name_div.decode("utf-8"), url_div)
+			App = Application(category, _removeNonAscii(name_div), url_div)
 
 			print("scrapping app: " + App.name)
 			scrap_version(App)
