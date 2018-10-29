@@ -145,11 +145,11 @@ class Application:
 
 			print(apk.version)
 			print(self.name)
-			print("Downloading " + self.name+ "=>" + apk.version.replace(".", "_").replace(" ","_").decode("utf-8"))
+			print("Downloading " + _removeNonAscii(self.name) + " => " + _removeNonAscii(apk.version).replace(".", "_").replace(" ","_"))
 			
 
 			apk_file = requests.get(apk.download_link)
-			appDir = os.path.join(appDir, apk.version.replace(".", "_").replace(" ","_").decode("utf-8"))
+			appDir = os.path.join(appDir, _removeNonAscii(apk.version).replace(".", "_").replace(" ","_"))
 			print("saving into "+ appDir + ".apk")
 
 			f = open(appDir + ".apk","w+")
@@ -166,6 +166,8 @@ class Application:
 			time.sleep(sleep_time)
 
 
+
+def _removeNonAscii(s): return "".join(i for i in s if ord(i)<128)
 
 def get_versions(url):
 	
