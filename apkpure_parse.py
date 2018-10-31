@@ -62,13 +62,15 @@ class Application:
 	def number_of_versions(self):
 		return len(self.versions)
 
-	def is_completed(self):
+	def is_completed(self, is_minOrmax):
 		downloaded = 0
 		for v in self.versions:
 			if v.is_downloaded:
 				downloaded += 1
 
-		return downloaded >= min_apks
+
+
+		return (downloaded >= min_apks and is_minOrmax) or downloaded >= max_apks
 
 	def get_valid_apks(self):
 
@@ -158,7 +160,7 @@ class Application:
 
 			apk.is_downloaded = True
 
-			if(self.is_completed()):
+			if(self.is_completed(False)):
 				print(str(max_apks) + " downloaded")
 				break
 
@@ -246,7 +248,10 @@ def scrap_version(app):
 
 			v_info = version.find("div", attrs={"class" : "ver-info"})
 			v_info_name = v_info.find("div", attrs={"class":"ver-info-top"})
-			name = str(v_info_name.contents[0]).replace("<strong>","").replace("</strong>","") + str(v_info_name.contents[1])
+			s1 = str((v_info_name.contents[0]))
+			#print(v_info_name)
+			s2 = str(_removeNonAscii(v_info_name.contents[1]))
+			name = _removeNonAscii(s1).replace("<strong>","").replace("</strong>","") + _removeNonAscii(s2)
 			#sys.exit(0)
 
 			v_info_m = version.find("div", attrs={"class" : "ver-info-m"})
@@ -436,7 +441,7 @@ if __name__ == '__main__':
 	for app in Apps:
 		print("Checking: " + app.name)
 		if(app.is_valid()):
-			if not app.is_completed():
+			if not app.is_completed(False):
 				app.download_apks()
 			else:
 				print("Already downloaded")
