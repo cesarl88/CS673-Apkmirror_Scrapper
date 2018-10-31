@@ -145,8 +145,9 @@ def main(LocalPath, Category, option):
 								for key, value in total_metrics.items():
 									print(key)
 									print(row[p])
-									total_metrics[key] += int(row[p])
-									p += 1
+									if key != "addedLines" and key != 'removedLines':
+										total_metrics[key] += int(row[p])
+										p += 1
 								
 									#print(column)
 									
@@ -158,6 +159,7 @@ def main(LocalPath, Category, option):
 				apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".smali")]
 				#print(apks)
 				apks = sorted(apks)
+				print(apks)
 				size = len(apks)
 				print("Size " + str(size))
 				pkg = ""
@@ -185,6 +187,7 @@ def main(LocalPath, Category, option):
 						mold, moldin = Metrics.countMethodsInProject(old)
 
 						Compared = False
+						metrics = {}
 
 						while not Compared and nextI < size - 1:
 							try:
@@ -204,7 +207,7 @@ def main(LocalPath, Category, option):
 								print("Comparing differences")	
 								diff = old.differences(new, [])
 								#print(diff)
-								metrics = {}
+								
 
 
 								print("Extracting differences")	
@@ -216,6 +219,7 @@ def main(LocalPath, Category, option):
 								Compared = True
 							except Exception as e:
 								nextI += 1
+								version1 = os.path.join(app_path,apks[nextI])
 						
 
 						
@@ -229,6 +233,8 @@ def main(LocalPath, Category, option):
 						continue
 						#sys.exit(0)
 					
+					if not metrics:
+						continue
 					print("Parsing differences")
 
 					bases = [""]
@@ -268,7 +274,7 @@ def main(LocalPath, Category, option):
 		except Exception as e:
 			print(e)
 			print("Skiping " + app)
-			sys.exit(0)
+			#sys.exit(0)
 
 
 		
