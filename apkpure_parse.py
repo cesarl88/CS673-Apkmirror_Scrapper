@@ -12,6 +12,8 @@ import string
 import json
 import argparse
 from collections import namedtuple
+import xlsxwriter.workbook 
+import re
 
 
 
@@ -23,6 +25,7 @@ min_apks = 10
 max_apks = 12
 months = 1
 days = 1
+analyze_technology = 0
 
 
 class ComplexEncoder(json.JSONEncoder):
@@ -64,13 +67,19 @@ class Application:
 
 	def is_completed(self, is_minOrmax):
 		downloaded = 0
+		fileDir = os.path.dirname(os.path.abspath(__file__))
+		fileDir = os.path.join(fileDir, self.category)
+		appDir = os.path.join(fileDir, self.name)
+
 		for v in self.versions:
-			if v.is_downloaded:
+			print("Checking " + appDir + "/" + _removeNonAscii(v.version).replace(".", "_").replace(" ","_") + ".apk")
+			if v.is_downloaded and os.path.exists(appDir + "/" + _removeNonAscii(v.version).replace(".", "_").replace(" ","_") + ".apk"):
 				downloaded += 1
 
 
-
+		#print downloaded
 		return (downloaded >= min_apks and is_minOrmax) or downloaded >= max_apks
+		#return downloaded >= max_apks
 
 	def get_valid_apks(self):
 
@@ -122,14 +131,16 @@ class Application:
 
 
 		for apk in valid_apks:
+			appDir = os.path.join(fileDir, self.name)
+
+			print("Checking " + appDir + "/" + _removeNonAscii(apk.version).replace(".", "_").replace(" ","_") + ".apk")
 			
-			if(apk.is_downloaded):
+			if(apk.is_downloaded and os.path.exists(appDir + "/" + _removeNonAscii(apk.version).replace(".", "_").replace(" ","_") + ".apk")):
 				print(apk.version + " is being ignored becuase it is already downloaded")
 				#time.sleep(2)
 				continue
 
 
-			appDir = os.path.join(fileDir, self.name)
 
 			if not os.path.exists(appDir):
 				os.mkdir(appDir)
@@ -166,6 +177,26 @@ class Application:
 
 			print("Waiting " + str(sleep_time) + " seconds")
 			time.sleep(sleep_time)
+
+	def analyze_android_version(self):
+		
+		androidVersions = []
+
+
+		for i in range(len(self.versions) - 1):
+			next_i = (i + 1) % len(self.versions)
+
+			v0 = self.versions[i]
+			#v1 = self.versions[next_i] 
+
+			if v0.android not in androidVersions:
+				androidVersions.append(v0.android)
+			#if v0.android != v1.android:
+				
+
+		return androidVersions
+
+
 
 
 
@@ -357,6 +388,7 @@ if __name__ == '__main__':
 	global max_apks
 	global months
 	global days
+	global analyze_technology
 
 	parser = argparse.ArgumentParser(description='Process some integers.')
 	parser.add_argument('category', type=str,
@@ -395,6 +427,10 @@ if __name__ == '__main__':
                     help='Sleep time between each download')
 
 
+	parser.add_argument('--analize-technology', '-a', type=int,
+                    help='Analyze technology')
+
+
 
 
 
@@ -404,52 +440,93 @@ if __name__ == '__main__':
 
 	print("Arguments configurations")
 
-	if args.max_date:
-		max_Date = args.max_date
-		print("Max Date: " + max_Date)
-
-	if args.min_apks:
-		min_apks = args.min_apks
-		print("Min APks: " + str(min_apks))
-
-	if args.max_apks:
-		max_apks = args.max_apks
-		print("Max Apks: " + str(max_apks))
-
-	if args.months:
-		months = args.months
-		print("months: " + str(months))
-
-	if args.days:
-		days = args.days
-		print("days: " + str(days))
-
-	if args.sleep_time:
-		sleep_time = args.sleep_time
-		print("sleep_time: " + str(sleep_time))
-
+	if(args.analize_technology):
+		analyze_technology = args.analize_technology
 
 
 	print("Loading Json")
 	load_json(args.category)
-	print("Downloading apps versions information")
-	download_category_page(args.category,args.start_page,args.end_page)
-	print("Saving info into json")
-	dump_json(args.category)
 
-	print("About to download apks")
-	for app in Apps:
-		print("Checking: " + app.name)
-		if(app.is_valid()):
-			if not app.is_completed(False):
-				app.download_apks()
-			else:
-				print("Already downloaded")
-		else:
-			print("Does not meet criteria")
+	if(analyze_technology > 0):
+
+		pattern = re.compile('[\W_]+')
+		workbook = xlsxwriter.Workbook(args.category + '_Versions.xlsx')
+
+		total = 0
+		i = 0
+		for app in Apps:
+			version_changes = app.analyze_android_version()
+
+			if(len(version_changes) > 0):
+
+				count = len(version_changes)
+
+				name = pattern.sub('', app.name)
+				name = name[:25] + "_" + str(i)	
+				i += 1
+				worksheet = workbook.add_worksheet(name)
+
+				worksheet.write(0, 0, 'Name')	
+				for t in range(count):
+					v_0 = version_changes[t]
+					worksheet.write(t + 1, 0, v_0)	
+
+				worksheet.write(count + 1, 0, "Total")	
+				worksheet.write(count + 2, 0, str(count))	
+
+				total += count
+
+		worksheet = workbook.add_worksheet("Summary")
+		worksheet.write(0, 0, "Total")	
+		worksheet.write(1, 0, str(total))
+		workbook.close()	
+				
+	else:
+
+		if args.max_date:
+			max_Date = args.max_date
+			print("Max Date: " + max_Date)
+
+		if args.min_apks:
+			min_apks = args.min_apks
+			print("Min APks: " + str(min_apks))
+
+		if args.max_apks:
+			max_apks = args.max_apks
+			print("Max Apks: " + str(max_apks))
+
+		if args.months:
+			months = args.months
+			print("months: " + str(months))
+
+		if args.days:
+			days = args.days
+			print("days: " + str(days))
+
+		if args.sleep_time:
+			sleep_time = args.sleep_time
+			print("sleep_time: " + str(sleep_time))
 
 
+
+		print("Downloading apps versions information")
+		download_category_page(args.category,args.start_page,args.end_page)
+		print("Saving info into json")
 		dump_json(args.category)
+
+		print("About to download apks")
+		for app in Apps:
+			print("Checking: " + app.name)
+			if(app.is_valid()):
+				if not app.is_completed(False):
+					app.download_apks()
+				else:
+					print("Already downloaded")
+			else:
+				print("Does not meet criteria")
+
+
+			dump_json(args.category)
 
 
 	
