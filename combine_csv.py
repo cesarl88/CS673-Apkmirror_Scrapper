@@ -96,11 +96,7 @@ if __name__ == '__main__':
 				shutil.rmtree(n_folder)
 				j += 1
 
-				if i == 2:
-					break
-
-			if i == 2:
-				break
+				
 	else:
 		content_csv = []
 
