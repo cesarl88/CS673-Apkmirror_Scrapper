@@ -57,8 +57,12 @@ if __name__ == '__main__':
 
 			worksheet.write(0, 0, 'APK')
 			worksheet.write(0, 1, 'Libraries')
-			worksheet.write(0, 2, 'Resources')
+			worksheet.write(0, 2, 'Diff Libraries')
+			worksheet.write(0, 3, 'Resources')
+			worksheet.write(0, 4, 'Diff Resources')
 
+			prev_lib = -999
+			prev_res = -999
 			for apk in apks:
 
 				worksheet.write(j, 0, apk)
@@ -77,14 +81,26 @@ if __name__ == '__main__':
 				r_count = sum([len(files) for r, d, files in os.walk(n_folder+"/r")])
 				r_count += sum([len(files) for r, d, files in os.walk(n_folder+"/res")])
 
+				if(prev_res != -999):
+					worksheet.write(j, 2, str(lib_count - prev_lib))
+					worksheet.write(j, 4, str(r_count - prev_res))
+
+
 				worksheet.write(j, 1, str(lib_count))
-				worksheet.write(j, 2, str(r_count))
+				worksheet.write(j, 3, str(r_count))
+
+				prev_res = r_count
+				prev_lib = lib_count
 
 				print("Removing " + n_folder)
 				shutil.rmtree(n_folder)
 				j += 1
 
-				
+				if i == 2:
+					break
+
+			if i == 2:
+				break
 	else:
 		content_csv = []
 
