@@ -63,6 +63,7 @@ if __name__ == '__main__':
 
 			prev_lib = -999
 			prev_res = -999
+			apks = sorted(apks)
 			for apk in apks:
 
 				worksheet.write(j, 0, apk)
