@@ -3,6 +3,9 @@ import argparse
 import csv		
 import xlsxwriter.workbook 
 import re
+import zipfile
+import shutil
+import time
 
 def get_woorkbook(workbook, csv_path, name):
 	worksheet = workbook.add_worksheet(name)
@@ -21,36 +24,96 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Process csv.')
 	parser.add_argument('category', type=str,
                     help='Category to search')
+	parser.add_argument('--count', '-c', type=int,
+                    help='Minimum number of apks to be a valid app')
 
+	count = 0
 	args = parser.parse_args()
 	category = args.category
 
 	fileDir = os.path.dirname(os.path.abspath(__file__)) 
 	category_path = fileDir +"/" + category 
 
-	cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]	
+	cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]
 
-	content_csv = []
-
-
-	workbook = xlsxwriter.Workbook(category + '.xlsx')
-	#print(category_path + "Category_Summary.csv")
-	get_woorkbook(workbook, category_path + "/Category_Summary.csv", category + " Summary")
-
-	i = 0
-
-	for app in cat_apps:
-		app_path = os.path.join(category_path,app)
-		name = pattern.sub('', app)
-		name = name[:25] + "_" + str(i)
-		i += 1
-		#print(name)
-		#worksheet = workbook.add_worksheet(name)
-		csvs = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith("_Summary.csv")]
-
-		csv_f = csvs[0]
-		csv_path = os.path.join(app_path,csv_f)
-		get_woorkbook(workbook, csv_path, name)
+	if args.count:
+		count = args.count
 		
+
+	if count > 0:
+		workbook = xlsxwriter.Workbook(category + '_lib_resources_count.xlsx')
+
+		i = 0
+		for app in cat_apps:
+			app_path = os.path.join(category_path,app)
+			apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")]
+
+			name = pattern.sub('', app)
+			name = name[:25] + "_" + str(i)	
+			worksheet = workbook.add_worksheet(name)
+			i += 1
+			j = 1
+
+
+			worksheet.write(0, 0, 'APK')
+			worksheet.write(0, 1, 'Libraries')
+			worksheet.write(0, 2, 'Resources')
+
+			for apk in apks:
+
+				worksheet.write(j, 0, apk)
+				n_folder = app_path + "/" +  apk.replace(".apk","")
+
+				print(app_path + "/" + apk)
+				try:
+					zip_ref = zipfile.ZipFile(app_path + "/" + apk, 'r')
+					zip_ref.extractall(n_folder)
+					zip_ref.close()
+				except Exception as e:
+					continue
+				
+
+				lib_count = sum([len(files) for r, d, files in os.walk(n_folder+"/lib")])
+				r_count = sum([len(files) for r, d, files in os.walk(n_folder+"/r")])
+				r_count += sum([len(files) for r, d, files in os.walk(n_folder+"/res")])
+
+				worksheet.write(j, 1, str(lib_count))
+				worksheet.write(j, 2, str(r_count))
+
+				print("Removing " + n_folder)
+				shutil.rmtree(n_folder)
+				j += 1
+
+				
+	else:
+		content_csv = []
+
+
+		workbook = xlsxwriter.Workbook(category + '.xlsx')
+		#print(category_path + "Category_Summary.csv")
+		get_woorkbook(workbook, category_path + "/Category_Summary.csv", category + " Summary")
+
+		i = 0
+
+		for app in cat_apps:
+			app_path = os.path.join(category_path,app)
+			name = pattern.sub('', app)
+			name = name[:25] + "_" + str(i)
+			i += 1
+			#print(name)
+			#worksheet = workbook.add_worksheet(name)
+			csvs = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith("_Summary.csv")]
+
+			csv_f = csvs[0]
+			csv_path = os.path.join(app_path,csv_f)
+			get_woorkbook(workbook, csv_path, name)
+			
+		
+	workbook.close()	
+
+
+
+
 	
-	workbook.close()			                
+
+			                
