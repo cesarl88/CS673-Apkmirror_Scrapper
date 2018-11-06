@@ -14,7 +14,7 @@ import argparse
 from collections import namedtuple
 import xlsxwriter.workbook 
 import re
-
+import statistics
 
 
 Apps = []
@@ -346,6 +346,29 @@ def is_app_info_downloaded(app):
 	return False
 
 
+def load_json_folder(folder):
+	global Apps
+
+	#print(analyze_technology)
+	json_data = folder +"/apps.json"
+
+	if os.path.exists(json_data):
+		with open(json_data) as json_data:
+			apps = json.load(json_data)
+			for app in apps:
+				a = Application('','','')
+				a.__dict__ = app
+
+				versions = []
+				
+				for v in app["versions"]:
+					ver = AppVersion(v["version"], v["url"], v["date"], v["size"], v["android"])
+					ver.is_downloaded = v["is_downloaded"]
+					versions.append(ver)
+					
+				a.versions = versions
+				Apps.append(a)
+
 def load_json(category):
 	global Apps
 
@@ -356,10 +379,10 @@ def load_json(category):
 		with open(json_data) as json_data:
 			apps = json.load(json_data)
 			for app in apps:
-			 	a = Application('','','')
-			 	a.__dict__ = app
+				a = Application('','','')
+				a.__dict__ = app
 
-			 	versions = []
+				versions = []
 				
 				for v in app["versions"]:
 					ver = AppVersion(v["version"], v["url"], v["date"], v["size"], v["android"])
@@ -381,14 +404,16 @@ def dump_json(category):
 	f.write(s);
 	f.close()
 
+
 if __name__ == '__main__':
 
-	global max_Date
-	global min_apks
-	global max_apks
-	global months
-	global days
-	global analyze_technology
+	#print(max_Date)
+	# global max_Date
+	# global min_apks
+	# global max_apks
+	# global months
+	# global days
+	# global analyze_technology
 
 	parser = argparse.ArgumentParser(description='Process some integers.')
 	parser.add_argument('category', type=str,
@@ -444,45 +469,66 @@ if __name__ == '__main__':
 		analyze_technology = args.analize_technology
 
 
-	print("Loading Json")
-	load_json(args.category)
+	
 
 	if(analyze_technology > 0):
 
 		pattern = re.compile('[\W_]+')
-		workbook = xlsxwriter.Workbook(args.category + '_Versions.xlsx')
+		workbook = xlsxwriter.Workbook('Summary_Versions.xlsx')
 
 		total = 0
 		i = 0
-		for app in Apps:
-			version_changes = app.analyze_android_version()
+		lst = []
 
-			if(len(version_changes) > 0):
+		cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
+		for cat in cat_folders:
+			print("Analizing " + cat)
 
-				count = len(version_changes)
+			cat_f = os.path.join("./",cat)
 
-				name = pattern.sub('', app.name)
-				name = name[:25] + "_" + str(i)	
-				i += 1
-				worksheet = workbook.add_worksheet(name)
+			
+			load_json_folder(cat_f)
 
-				worksheet.write(0, 0, 'Name')	
-				for t in range(count):
-					v_0 = version_changes[t]
-					worksheet.write(t + 1, 0, v_0)	
+			for app in Apps:
+				version_changes = app.analyze_android_version()
+				lst.append(len(version_changes))
+				# if(len(version_changes) > 0):
 
-				worksheet.write(count + 1, 0, "Total")	
-				worksheet.write(count + 2, 0, str(count))	
+				# 	count = len(version_changes)
 
-				total += count
+				# 	name = pattern.sub('', app.name)
+				# 	name = name[:25] + "_" + str(i)	
+				# 	i += 1
+				# 	worksheet = workbook.add_worksheet(name)
 
+				# 	worksheet.write(0, 0, 'Name')	
+				# 	for t in range(count):
+				# 		v_0 = version_changes[t]
+				# 		worksheet.write(t + 1, 0, v_0)	
+
+				# 	worksheet.write(count + 1, 0, "Total")	
+				# 	worksheet.write(count + 2, 0, str(count))	
+
+				# 	total += count
+
+		#print(lst)
 		worksheet = workbook.add_worksheet("Summary")
 		worksheet.write(0, 0, "Total")	
-		worksheet.write(1, 0, str(total))
+		worksheet.write(1, 0, str(sum(lst)))
+		worksheet.write(0, 1, "Average")	
+		worksheet.write(1, 1, str(round(sum(lst) / max(len(lst),1),2)))
+		worksheet.write(0, 2, "Min")	
+		worksheet.write(1, 2, str(min(lst)))
+		worksheet.write(0, 3, "Max")	
+		worksheet.write(1, 3, str(max(lst)))
+		worksheet.write(0, 4, "Median")	
+		worksheet.write(1, 4, str(statistics.median(lst)))
 		workbook.close()	
 				
 	else:
 
+		print("Loading Json")
+		load_json(args.category)
 		if args.max_date:
 			max_Date = args.max_date
 			print("Max Date: " + max_Date)
