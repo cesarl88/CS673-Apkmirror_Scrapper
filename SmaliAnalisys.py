@@ -5,7 +5,7 @@ import sys, time, csv
 import os
 import subprocess
 import json
-
+import statistics
 
 CURSOR_UP_ONE = '\x1b[1A'
 ERASE_LINE = '\x1b[2K'
@@ -55,68 +55,20 @@ def main(LocalPath, Category, option):
 
 	set_total_metrics = False	
 	total_metrics = {}
+	complete_metrics = {}
 	headers = ""
 
 	FailList = ""
 
+	if option == 2:
 
-	headers_printed = False	
-	for app in cat_apps:
-		try:
-			FailList += app + "-------\n" 
-
-			app_path = os.path.join(LocalPath,app)
-			print("Analizing " + app, 2)
-			print("")
-			AppsAnlazed += app + "\n"
-
-			pr = 0
-			smali_count = 0
-			csv_file = ""
-
-			if option == 0:
-				apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")]
-				#print(apks)
-				size = len(apks)
-				for i in range(size - 1):
-					if smali_count == 12:
-						break
-
-					t = (pr / float((size))) * 100 *  (1 / float(total)) + prog
-
-					print_same_line("Completed: " + str(t) + "%")
-
-					version0 = os.path.join(app_path,apks[i])
-					smali = version0 + ".smali"
-					if os.path.exists(smali): 
-						smali_count+=1
-						continue
-
-					Command = "sa-disassemble '" + version0 +"'"
-					#print("Command " + Command)
-					
-					try:
-						p = subprocess.Popen(Command, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
-						(output, err) = p.communicate()
-						p_status = p.wait()
-						smali_count+=1
-					except KeyboardInterrupt:
-						print("Exiting")
-						sys.exit(0)
-					except Exception as e:
-						FailList += version0 + '\n'
-						#print(FailList)
-
-				if smali_count < 12:
-					FailList+= "app has " + str(smali_count) +" smali files, Missing "+str(12 - smali_count)+"\n"
-
-				smali_count = 0
-					
-			elif option == 1:
-
-				#if os.path.exists(app_path +"/Obfuscated.txt"): 
-				#	print("Not enough Apps majority are obfuscated")
-				#	continue
+		cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
+		for cat in cat_folders:
+			cat_f = os.path.join("./",cat)
+			cat_apps = [dI for dI in os.listdir(cat_f) if os.path.isdir(os.path.join(cat_f,dI))]
+				
+			for app in cat_apps:
+				app_path = os.path.join(cat_f,app)
 
 				summary_path = app_path + "/" + app + "_Summary.csv"
 				print("Checking for " + summary_path)
@@ -135,7 +87,9 @@ def main(LocalPath, Category, option):
 									for column in row:
 										#print(column)
 										if column != "addedLines" and column != 'removedLines':
+											headers += column + ","
 											total_metrics[column] = 0
+											complete_metrics[column] = []
 									set_total_metrics = True
 								t = 1
 								print(total_metrics)
@@ -143,156 +97,278 @@ def main(LocalPath, Category, option):
 								print("Here")
 								p = 0
 								for key, value in total_metrics.items():
-									print(key)
-									print(row[p])
+									#print(key)
+									#print(row[p])
 									if key != "addedLines" and key != 'removedLines':
 										total_metrics[key] += int(row[p])
+										complete_metrics[key].append(int(row[p]))
 										p += 1
-								
-									#print(column)
+		#print(complete_metrics)
+		#print(total_metrics)
+		#sys.exit(0)
+
+
+	else:
+
+		headers_printed = False	
+		for app in cat_apps:
+			try:
+				FailList += app + "-------\n" 
+
+				app_path = os.path.join(LocalPath,app)
+				print("Analizing " + app, 2)
+				print("")
+				AppsAnlazed += app + "\n"
+
+				pr = 0
+				smali_count = 0
+				csv_file = ""
+
+				if option == 0:
+					apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")]
+					#print(apks)
+					size = len(apks)
+					for i in range(size - 1):
+						if smali_count == 12:
+							break
+
+						t = (pr / float((size))) * 100 *  (1 / float(total)) + prog
+
+						print_same_line("Completed: " + str(t) + "%")
+
+						version0 = os.path.join(app_path,apks[i])
+						smali = version0 + ".smali"
+						if os.path.exists(smali): 
+							smali_count+=1
+							continue
+
+						Command = "sa-disassemble '" + version0 +"'"
+						#print("Command " + Command)
+						
+						try:
+							p = subprocess.Popen(Command, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
+							(output, err) = p.communicate()
+							p_status = p.wait()
+							smali_count+=1
+						except KeyboardInterrupt:
+							print("Exiting")
+							sys.exit(0)
+						except Exception as e:
+							FailList += version0 + '\n'
+							#print(FailList)
+
+					if smali_count < 12:
+						FailList+= "app has " + str(smali_count) +" smali files, Missing "+str(12 - smali_count)+"\n"
+
+					smali_count = 0
+						
+				elif option == 1:
+
+					#if os.path.exists(app_path +"/Obfuscated.txt"): 
+					#	print("Not enough Apps majority are obfuscated")
+					#	continue
+
+					summary_path = app_path + "/" + app + "_Summary.csv"
+					print("Checking for " + summary_path)
+					if os.path.exists(summary_path):
+						with open(summary_path) as csv_file:
+							print(app + " summary csv Found")
+							csv_reader = csv.reader(csv_file, delimiter = ",")
+							line_count = 0
+
+							t = 0
+							for row in csv_reader:
+								if len(row) == 0:
+									continue
+								if t== 0:
+									if not set_total_metrics:
+										for column in row:
+											#print(column)
+											if column != "addedLines" and column != 'removedLines':
+												headers += column + ","
+												total_metrics[column] = 0
+												complete_metrics[column] = []
+										set_total_metrics = True
+									t = 1
+									print(total_metrics)
+								else:
+									print("Here")
+									p = 0
+									for key, value in total_metrics.items():
+										#print(key)
+										#print(row[p])
+										if key != "addedLines" and key != 'removedLines':
+											total_metrics[key] += int(row[p])
+											complete_metrics[key].append(int(row[p]))
+											p += 1
+									
+										#print(column)
+										
+
+							#print(total_metrics)
+						continue
+
+
+					apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".smali")]
+					#print(apks)
+					apks = sorted(apks)
+					print(apks)
+					size = len(apks)
+					print("Size " + str(size))
+					pkg = ""
+					if size > 0:
+						pkg = queryAaptForPackageName(os.path.join(app_path,apks[0]).replace(".smali",""))
+
+					print("Package: " + str(pkg))
+
+					for i in range(size - 1):
+						nextI = i + 1
+						version0 = os.path.join(app_path,apks[i])
+						version1 = os.path.join(app_path,apks[nextI])
+						print("Comparing %s against %s : Package: %s" % (version0, version1,pkg))
+
+
+						try:
+							print("Parsing old Version")
+							old = SmaliProject.SmaliProject()
+							old.parseProject(version0, None, exclude_lists, None, True)
+
+							print("Checking old version obfuscated")
+							if old.isProjectObfuscated():
+								raise Metrics.ProjectObfuscatedException()
+
+							mold, moldin = Metrics.countMethodsInProject(old)
+
+							Compared = False
+							metrics = {}
+
+							while not Compared and nextI < size - 1:
+								try:
+									print("Parsing New Version")
+									new = SmaliProject.SmaliProject()
+									new.parseProject(version1, None, exclude_lists, None, True)
+									
+								    #parseProject(new, args.smaliv2, pkg, args.exclude_lists, args.include_lists, args.include_unpackaged)
+
+									print("Getting Metrics")
+									mnew, mnewin = Metrics.countMethodsInProject(new)
+									print("Checking New version obfuscated")
+									if new.isProjectObfuscated():
+										raise Metrics.ProjectObfuscatedException()
+
+
+									print("Comparing differences")	
+									diff = old.differences(new, [])
+									#print(diff)
 									
 
-						print(total_metrics)
-					continue
 
+									print("Extracting differences")	
+									Metrics.initMetricsDict("", metrics)
+									metrics["#M-"] = mold + moldin
+									metrics["#M+"] =  mnew + mnewin
+									Metrics.computeMetrics(diff, metrics, "", True, False)
 
-				apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".smali")]
-				#print(apks)
-				apks = sorted(apks)
-				print(apks)
-				size = len(apks)
-				print("Size " + str(size))
-				pkg = ""
-				if size > 0:
-					pkg = queryAaptForPackageName(os.path.join(app_path,apks[0]).replace(".smali",""))
-
-				print("Package: " + str(pkg))
-
-				for i in range(size - 1):
-					nextI = i + 1
-					version0 = os.path.join(app_path,apks[i])
-					version1 = os.path.join(app_path,apks[nextI])
-					print("Comparing %s against %s : Package: %s" % (version0, version1,pkg))
-
-
-					try:
-						print("Parsing old Version")
-						old = SmaliProject.SmaliProject()
-						old.parseProject(version0, None, exclude_lists, None, True)
-
-						print("Checking old version obfuscated")
-						if old.isProjectObfuscated():
-							raise Metrics.ProjectObfuscatedException()
-
-						mold, moldin = Metrics.countMethodsInProject(old)
-
-						Compared = False
-						metrics = {}
-
-						while not Compared and nextI < size - 1:
-							try:
-								print("Parsing New Version")
-								new = SmaliProject.SmaliProject()
-								new.parseProject(version1, None, exclude_lists, None, True)
-								
-							    #parseProject(new, args.smaliv2, pkg, args.exclude_lists, args.include_lists, args.include_unpackaged)
-
-								print("Getting Metrics")
-								mnew, mnewin = Metrics.countMethodsInProject(new)
-								print("Checking New version obfuscated")
-								if new.isProjectObfuscated():
-									raise Metrics.ProjectObfuscatedException()
-
-
-								print("Comparing differences")	
-								diff = old.differences(new, [])
-								#print(diff)
-								
-
-
-								print("Extracting differences")	
-								Metrics.initMetricsDict("", metrics)
-								metrics["#M-"] = mold + moldin
-								metrics["#M+"] =  mnew + mnewin
-								Metrics.computeMetrics(diff, metrics, "", True, False)
-
-								Compared = True
-							except Exception as e:
-								nextI += 1
-								version1 = os.path.join(app_path,apks[nextI])
-						
-
-						
-
-					except Metrics.ProjectObfuscatedException:
-						print("This project is obfuscated. Unable to proceed.", file=sys.stderr)
-						continue
-					except Exception as e:
-						print("Error parsing")
-						print(e)
-						continue
-						#sys.exit(0)
-					
-					if not metrics:
-						continue
-					print("Parsing differences")
-
-					bases = [""]
-
-					if not set_total_metrics:
-						total_metrics = dict.fromkeys(metrics.keys(), 0)
-						set_total_metrics = True
-					
-					for b in bases:
-						if not headers_printed:
-							for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
-								headers += k[len(b):] + ','
+									Compared = True
+								except Exception as e:
+									nextI += 1
+									version1 = os.path.join(app_path,apks[nextI])
 							
-							headers += "addedLines"  +  ','
-							headers += "removedLines"
-							headers += '\n'
-							headers_printed = True
 
-					#print(b, end=',')
+							
+
+						except Metrics.ProjectObfuscatedException:
+							print("This project is obfuscated. Unable to proceed.", file=sys.stderr)
+							continue
+						except Exception as e:
+							print("Error parsing")
+							print(e)
+							continue
+							#sys.exit(0)
+						
+						if not metrics:
+							continue
+						print("Parsing differences")
+
+						bases = [""]
+
+						if not set_total_metrics:
+							total_metrics = dict.fromkeys(metrics.keys(), 0)
+							complete_metrics = dict.fromkeys(metrics.keys(), [])
+							set_total_metrics = True
+						
+						for b in bases:
+							if not headers_printed:
+								for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
+									headers += k[len(b):] + ','
+								
+								headers += "addedLines"  +  ','
+								headers += "removedLines"
+								headers += '\n'
+								headers_printed = True
+
+						#print(b, end=',')
 
 
-					for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
-						csv_file += str(metrics[k]) +  ','
-						total_metrics[k] += metrics[k] 
+						for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
+							csv_file += str(metrics[k]) +  ','
+							total_metrics[k] += metrics[k] 
+							complete_metrics[k].append(metrics[k])
 
 
 
-					csv_file += '|'.join(metrics["{}addedLines".format(b)]) +  ','
-					csv_file += '|'.join(metrics["{}removedLines".format(b)]) +  ','	
+						csv_file += '|'.join(metrics["{}addedLines".format(b)]) +  ','
+						csv_file += '|'.join(metrics["{}removedLines".format(b)]) +  ','	
 
-					csv_file += '\n'
-				
-				File = open(LocalPath + "/" + app + "/"+app+"_Summary.csv", "+w")
-				File.write(headers + '\n' + csv_file)
-				File.close()
+						csv_file += '\n'
+					
+					File = open(LocalPath + "/" + app + "/"+app+"_Summary.csv", "+w")
+					File.write(headers + '\n' + csv_file)
+					File.close()
 
-		except Exception as e:
-			print(e)
-			print("Skiping " + app)
-			#sys.exit(0)
+			except Exception as e:
+				print(e)
+				print("Skiping " + app)
+				#sys.exit(0)
 
 
-		
+			
 
 	if option == 0:
 		File = open(LocalPath + "/Category_Failed.txt", "+w")
 		File.write(FailList)
 		File.close()
 	else:
+
+		print(total_metrics)
+		print(complete_metrics)
+
 		total_csv = ""
 		total_avg = ""
+		total_mdn = ""
+		total_min = ""
+		total_max = ""
 		for key, value in total_metrics.items():
-			total_csv += str(value) + ','
-			total_avg += str(value / total) + ','
+			if(key != "Type" and key != ""):
+				total_csv += str(value) + ','
+				total_avg += str(round(value / total,2)) + ','
+
+
+		for key, value in complete_metrics.items():
+			if(key != "Type" and key != ""):
+				total_mdn += str(round(statistics.median(value),2)) + ','
+				total_min += str(min(value)) + ','
+				total_max += str(max(value)) + ','
+		
 		
 
+		print("Saving Category")
+
+		if(option == 2):
+			LocalPath = "."
+
 		File = open(LocalPath + "/Category_Summary.csv", "+w")
-		File.write(headers + '\n' + total_csv + '\n' + total_avg)
+		File.write("Type," + headers + '\n' + "total, " + total_csv + '\n' + "avg, " + total_avg + '\n' +  "median," + total_mdn + '\n' + "min, " + total_min + '\n' + "max," + total_max)
 		File.close()
 
 		prog = (progress / float(total)) * 100.00
