@@ -40,7 +40,10 @@ def compare_versions(v0_path, v1_path, count):
 	elif os.path.exists(v1_path+"/res"):
 		res1_path = v1_path + "/res"
 
-	return compare_resources(res0_path, res1_path, count)
+	if os.path.exists(res0_path) and os.path.exists(res1_path):
+		return compare_resources(res0_path, res1_path, count)
+	else:
+		return count
 
 			
 
