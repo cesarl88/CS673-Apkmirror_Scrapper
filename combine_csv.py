@@ -404,7 +404,7 @@ if __name__ == '__main__':
 	elif count_ == 2:
 		combine_resources_count()
 	elif count_ == 3:
-		unzip_apks(category):
+		unzip_apks(category)
 	else:
 		content_csv = []
 
