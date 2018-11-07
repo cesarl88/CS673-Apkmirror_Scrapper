@@ -38,7 +38,7 @@ def collect_metrics():
 	set_total_metrics = False	
 	total_metrics = {}
 	complete_metrics = {}
-	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
+	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))  and not os.path.join("./",dI).startswith("./.git")]
 	for cat in cat_folders:
 		cat_f = os.path.join("./",cat)
 		cat_apps = [dI for dI in os.listdir(cat_f) if os.path.isdir(os.path.join(cat_f,dI))]
