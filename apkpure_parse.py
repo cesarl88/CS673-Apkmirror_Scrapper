@@ -15,6 +15,7 @@ from collections import namedtuple
 import xlsxwriter.workbook 
 import re
 import statistics
+import pickle
 
 
 Apps = []
@@ -405,6 +406,67 @@ def dump_json(category):
 	f.close()
 
 
+def save_obj(obj, name ):
+    with open('./'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(name):
+    with open('./' + name, 'rb') as f:
+        return pickle.load(f)
+
+
+def analyze_android_versions():
+	
+
+	total = 0
+	i = 0
+	lst = []
+
+	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
+	for cat in cat_folders:
+		print("Analizing " + cat)
+
+		cat_f = os.path.join("./",cat)
+
+		
+		load_json_folder(cat_f)
+
+		for app in Apps:
+			version_changes = app.analyze_android_version()
+			lst.append(len(version_changes))
+
+	save_obj(lst, "android_versions")
+
+	#print(lst)
+	
+
+def combine_android_versions():
+	pattern = re.compile('[\W_]+')
+	workbook = xlsxwriter.Workbook('Summary_Versions.xlsx')
+
+	pkls = sorted([dI for dI in os.listdir("./") if os.path.isfile(os.path.join("./",dI)) and os.path.join("./",dI).endswith(".pkl")])
+
+	lst = []
+	for pkl in pkls:
+		c = load_obj(pkl)
+		
+		for i in c:
+			lst.append(c)
+
+	worksheet = workbook.add_worksheet("Summary")
+	worksheet.write(0, 0, "Total")	
+	worksheet.write(1, 0, str(sum(lst)))
+	worksheet.write(0, 1, "Average")	
+	worksheet.write(1, 1, str(round(sum(lst) / max(len(lst),1),2)))
+	worksheet.write(0, 2, "Min")	
+	worksheet.write(1, 2, str(min(lst)))
+	worksheet.write(0, 3, "Max")	
+	worksheet.write(1, 3, str(max(lst)))
+	worksheet.write(0, 4, "Median")	
+	worksheet.write(1, 4, str(statistics.median(lst)))
+	workbook.close()
+
 if __name__ == '__main__':
 
 	#print(max_Date)
@@ -471,60 +533,10 @@ if __name__ == '__main__':
 
 	
 
-	if(analyze_technology > 0):
-
-		pattern = re.compile('[\W_]+')
-		workbook = xlsxwriter.Workbook('Summary_Versions.xlsx')
-
-		total = 0
-		i = 0
-		lst = []
-
-		cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
-		for cat in cat_folders:
-			print("Analizing " + cat)
-
-			cat_f = os.path.join("./",cat)
-
-			
-			load_json_folder(cat_f)
-
-			for app in Apps:
-				version_changes = app.analyze_android_version()
-				lst.append(len(version_changes))
-				# if(len(version_changes) > 0):
-
-				# 	count = len(version_changes)
-
-				# 	name = pattern.sub('', app.name)
-				# 	name = name[:25] + "_" + str(i)	
-				# 	i += 1
-				# 	worksheet = workbook.add_worksheet(name)
-
-				# 	worksheet.write(0, 0, 'Name')	
-				# 	for t in range(count):
-				# 		v_0 = version_changes[t]
-				# 		worksheet.write(t + 1, 0, v_0)	
-
-				# 	worksheet.write(count + 1, 0, "Total")	
-				# 	worksheet.write(count + 2, 0, str(count))	
-
-				# 	total += count
-
-		#print(lst)
-		worksheet = workbook.add_worksheet("Summary")
-		worksheet.write(0, 0, "Total")	
-		worksheet.write(1, 0, str(sum(lst)))
-		worksheet.write(0, 1, "Average")	
-		worksheet.write(1, 1, str(round(sum(lst) / max(len(lst),1),2)))
-		worksheet.write(0, 2, "Min")	
-		worksheet.write(1, 2, str(min(lst)))
-		worksheet.write(0, 3, "Max")	
-		worksheet.write(1, 3, str(max(lst)))
-		worksheet.write(0, 4, "Median")	
-		worksheet.write(1, 4, str(statistics.median(lst)))
-		workbook.close()	
-				
+	if(analyze_technology == 1):
+		analyze_android_versions()
+	elif if(analyze_technology == 2):			
+		combine_android_versions()
 	else:
 
 		print("Loading Json")

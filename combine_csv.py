@@ -253,7 +253,7 @@ def count_resources():
 
 def combine_resources_count():
 	print("Count Resources")
-	workbook = xlsxwriter.Workbook('Summary_resources_changes.xlsx')
+	workbook = xlsxwriter.Workbook('combined_resources.xlsx')
 	
 	worksheet = workbook.add_worksheet("Resources Summary")
 	worksheet.write(0, 0, 'Type')
@@ -278,10 +278,6 @@ def combine_resources_count():
 
 		for r in c["Modified"]:
 			count["Modified"].append(r)
-
-
-	print("Added => ")
-	print(count["Added"])
 
 
 	worksheet.write(1, 0, 'Total')

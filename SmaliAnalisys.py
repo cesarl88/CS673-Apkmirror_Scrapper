@@ -6,6 +6,8 @@ import os
 import subprocess
 import json
 import statistics
+import xlsxwriter.workbook 
+import pickle
 
 CURSOR_UP_ONE = '\x1b[1A'
 ERASE_LINE = '\x1b[2K'
@@ -21,7 +23,102 @@ def print_same_line(str, n = 1):
 	delete_last_lines(n)
 	print(str)
 
+
+def save_obj(obj, name ):
+    with open('./'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(name):
+    with open('./' + name, 'rb') as f:
+        return pickle.load(f)
 	
+
+def collect_metrics():
+	set_total_metrics = False	
+	total_metrics = {}
+	complete_metrics = {}
+	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
+	for cat in cat_folders:
+		cat_f = os.path.join("./",cat)
+		cat_apps = [dI for dI in os.listdir(cat_f) if os.path.isdir(os.path.join(cat_f,dI))]
+			
+		for app in cat_apps:
+			app_path = os.path.join(cat_f,app)
+
+			summary_path = app_path + "/" + app + "_Summary.csv"
+			print("Checking for " + summary_path)
+			if os.path.exists(summary_path):
+				with open(summary_path) as csv_file:
+					print(app + " summary csv Found")
+					csv_reader = csv.reader(csv_file, delimiter = ",")
+					line_count = 0
+
+					t = 0
+					for row in csv_reader:
+						if len(row) == 0:
+							continue
+						if t== 0:
+							if not set_total_metrics:
+								for column in row:
+									#print(column)
+									if column != "addedLines" and column != 'removedLines':
+										complete_metrics[column] = []
+								set_total_metrics = True
+							t = 1
+							
+						else:
+							
+							p = 0
+							for key, value in complete_metrics.items():
+								
+								if key != "addedLines" and key != 'removedLines':
+									complete_metrics[key].append(int(row[p]))
+									p += 1
+	
+	save_obj(complete_metrics, "versions_metrics")
+
+
+def combine_metrics():
+
+	pkls = sorted([dI for dI in os.listdir("./") if os.path.isfile(os.path.join("./",dI)) and os.path.join("./",dI).endswith(".pkl")])
+
+	complete_metrics = {}
+	set_keys = False
+	for pkl in pkls:
+		c = load_obj(pkl)
+
+		if not set_keys:
+			complete_metrics = c
+			set_keys = True
+		else:
+			for key, value in c.items():
+				for it in value:
+					complete_metrics[key].append(it)
+
+
+	workbook = xlsxwriter.Workbook('combined_metrics.xlsx')
+	worksheet = workbook.add_worksheet("RSummary")
+	worksheet.write(0, 0, 'Type')
+	worksheet.write(0, 1, 'Total')
+	worksheet.write(0, 2, 'Average')
+	worksheet.write(0, 3, 'Median')
+	worksheet.write(0, 4, 'Min')
+	worksheet.write(0, 5, 'Max')
+
+	for i, dic in enumerate(complete_metrics.items()):
+		worksheet.write(i + 1, 0, dic[0])
+
+		worksheet.write(i + 1, 1, sum(dic[1]))
+		worksheet.write(i + 1, 2, round(sum(dic[1]) / len(dic[1]),2))
+		worksheet.write(i + 1, 3, round(statistics.median(dic[1]),2))
+		worksheet.write(i + 1, 4, min(dic[1]))
+		worksheet.write(i + 1, 5, max(dic[1]))
+		
+			
+	workbook.close()	
+		
+
 
 def main(LocalPath, Category, option):
 
@@ -62,52 +159,15 @@ def main(LocalPath, Category, option):
 
 	if option == 2:
 
-		cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
-		for cat in cat_folders:
-			cat_f = os.path.join("./",cat)
-			cat_apps = [dI for dI in os.listdir(cat_f) if os.path.isdir(os.path.join(cat_f,dI))]
-				
-			for app in cat_apps:
-				app_path = os.path.join(cat_f,app)
-
-				summary_path = app_path + "/" + app + "_Summary.csv"
-				print("Checking for " + summary_path)
-				if os.path.exists(summary_path):
-					with open(summary_path) as csv_file:
-						print(app + " summary csv Found")
-						csv_reader = csv.reader(csv_file, delimiter = ",")
-						line_count = 0
-
-						t = 0
-						for row in csv_reader:
-							if len(row) == 0:
-								continue
-							if t== 0:
-								if not set_total_metrics:
-									for column in row:
-										#print(column)
-										if column != "addedLines" and column != 'removedLines':
-											headers += column + ","
-											total_metrics[column] = 0
-											complete_metrics[column] = []
-									set_total_metrics = True
-								t = 1
-								print(total_metrics)
-							else:
-								print("Here")
-								p = 0
-								for key, value in total_metrics.items():
-									#print(key)
-									#print(row[p])
-									if key != "addedLines" and key != 'removedLines':
-										total_metrics[key] += int(row[p])
-										complete_metrics[key].append(int(row[p]))
-										p += 1
+		collect_metrics()
 		#print(complete_metrics)
 		#print(total_metrics)
 		#sys.exit(0)
 
-
+		sys.exit(0)
+	elif option == 3:
+		combine_metrics()
+		sys.exit(0)
 	else:
 
 		headers_printed = False	
