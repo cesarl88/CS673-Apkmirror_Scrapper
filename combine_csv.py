@@ -55,7 +55,8 @@ def count_res(v0, v1, count):
 	print("v0")
 	print(v0)
 	print(resoures)
-	
+	Modified = 0
+	Removed = 0
 	for resource in resoures:
 		
 		v0_file = v0 + "/" + resource
@@ -109,6 +110,8 @@ def compare_resources(v0, v1, count):
 			Removed += sum([len(files) for r, d, files in os.walk(r0)])
 
 
+	count["Modified"] += Modified
+	count["removeOrAdded"]+= Removed
 	count = count_res(v0, v1, count)
 
 	return count
