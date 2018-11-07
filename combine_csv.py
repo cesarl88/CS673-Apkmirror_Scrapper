@@ -150,6 +150,16 @@ def count_resources():
 	
 	i = 0
 	count = {"Removed" : [], "Added" : [], "Modified": []}
+	processed = []
+	if(os.path.exists("./res_processed.pkl")):
+		processed = load_obj("res_processed.pkl")
+		count = load_obj("resources_count.pkl")
+		print(processed)
+		print(count)
+
+
+
+	
 
 	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
 
@@ -166,6 +176,11 @@ def count_resources():
 		cat_apps = sorted(cat_apps)
 		toRemove = []
 		for app in cat_apps:
+
+			if app in processed:
+				print(app + " already processed")
+				continue
+
 			app_path = os.path.join(category_path,app)
 			print("App => " + app)
 			apks = sorted([dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")])
@@ -195,7 +210,7 @@ def count_resources():
 
 				try:
 
-					if not os.path.exists(n_folder)
+					if not os.path.exists(n_folder):
 						zip_ref = zipfile.ZipFile(n_folder + ".apk", 'r')
 						zip_ref.extractall(n_folder)
 						zip_ref.close()
@@ -207,7 +222,7 @@ def count_resources():
 
 					while not done and next_index < apk_count - 1:
 						try:	
-							if not os.path.exists(n_folder_next)
+							if not os.path.exists(n_folder_next):
 								zip_ref = zipfile.ZipFile(n_folder_next + ".apk", 'r')
 								zip_ref.extractall(n_folder_next )
 								zip_ref.close()
@@ -257,7 +272,13 @@ def count_resources():
 				j += 1
 
 			#time.sleep(2)	
+			
+			processed.append(app)
 
+			save_obj(processed, "res_processed")
+			save_obj(count, "resources_count")
+			if i == 30:
+				break
 			# print("Removing")
 			# for r in toRemove:
 			# 	if os.path.exists(r):
@@ -279,11 +300,12 @@ def unzip_apks(category):
 	category_path = "./" + category
 	cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]
 
-		#print(sorted(cat_apps))
+	force_stop = False
+		#print(sorted(cat_apps)) 
 	cat_apps = sorted(cat_apps)
 	for app in cat_apps:
 		app_path = os.path.join(category_path,app)
-		print("App => " + app)
+		print("App("+str(i)+") => " + app)
 		apks = sorted([dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")])
 		
 		
@@ -304,9 +326,10 @@ def unzip_apks(category):
 			
 			
 			try:
-				zip_ref = zipfile.ZipFile(n_folder + ".apk", 'r')
-				zip_ref.extractall(n_folder)
-				zip_ref.close()
+				if not os.path.exists(n_folder):
+					zip_ref = zipfile.ZipFile(n_folder + ".apk", 'r')
+					zip_ref.extractall(n_folder)
+					zip_ref.close()
 			
 
 			except Exception as e:
@@ -314,6 +337,8 @@ def unzip_apks(category):
 				continue
 			
 
+		if i == 30:
+			break
 
 
 	
@@ -337,6 +362,8 @@ def combine_resources_count():
 
 	for pkl in pkls:
 		c = load_obj(pkl)
+		#print(c)
+		#print(pkl)
 
 		for r in c["Removed"]:
 			count["Removed"].append(r)
@@ -405,6 +432,8 @@ if __name__ == '__main__':
 	elif count_ == 2:
 		combine_resources_count()
 	elif count_ == 3:
+		# cat = ['BUSINESS', 'FINANCE', 'EDUCATION', 'TOOLS', 'COMMUNICATION']
+		# for c in cat:
 		unzip_apks(category)
 	else:
 		content_csv = []
