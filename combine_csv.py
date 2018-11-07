@@ -40,34 +40,16 @@ def compare_versions(v0_path, v1_path, count):
 	elif os.path.exists(v1_path+"/res"):
 		res1_path = v1_path + "/res"
 
-	if os.path.exists(res0_path) and os.path.exists(res1_path):
+
+	if os.path.isdir(v0_path) and os.path.isdir(v1_path):
+		count == count_res(v0_path, v1_path, count)	
+	
+	if os.path.isdir(res0_path) and os.path.isdir(res1_path):
 		return compare_resources(res0_path, res1_path, count)
 	else:
 		return count
 
-			
-
-def compare_resources(v0, v1, count):
-	print("=> " + v0)
-	print("=> " + v1)
-	print("=> " + str(count))
-	#time.sleep(2)
-
-	resoures_folders = [dI for dI in os.listdir(v0) if os.path.isdir(os.path.join(v0,dI))]
-
-	Modified = 0
-	Removed = 0
-	for res in resoures_folders:
-		r0 = v0 + "/" + res
-		r1 = v1 + "/" + res
-
-		if os.path.exists(r1):
-			count = compare_resources(r0,r1, count)
-			print("Here => " + str(count))
-		else:
-			Removed += sum([len(files) for r, d, files in os.walk(r0)])
-
-
+def count_res(v0, v1, count):
 	resoures = [fI for fI in os.listdir(v0) if os.path.isfile(os.path.join(v0,fI))]
 
 	print("v0")
@@ -102,6 +84,32 @@ def compare_resources(v0, v1, count):
 
 	count["Modified"] += Modified
 	count["removeOrAdded"]+= Removed
+
+def compare_resources(v0, v1, count):
+	print("=> " + v0)
+	print("=> " + v1)
+	print("=> " + str(count))
+	#time.sleep(2)
+
+	if not os.path.exists(v0):
+		return count
+
+	resoures_folders = [dI for dI in os.listdir(v0) if os.path.isdir(os.path.join(v0,dI))]
+
+	Modified = 0
+	Removed = 0
+	for res in resoures_folders:
+		r0 = v0 + "/" + res
+		r1 = v1 + "/" + res
+
+		if os.path.exists(r1):
+			count = compare_resources(r0,r1, count)
+			print("Here => " + str(count))
+		else:
+			Removed += sum([len(files) for r, d, files in os.walk(r0)])
+
+
+	count = count_res(v0, v1, count)
 
 	return count
 
