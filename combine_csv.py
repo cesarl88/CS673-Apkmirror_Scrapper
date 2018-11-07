@@ -274,6 +274,7 @@ def count_resources():
 
 def unzip_apks(category):
 	
+	i = 0
 	
 	category_path = "./" + category
 	cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]
