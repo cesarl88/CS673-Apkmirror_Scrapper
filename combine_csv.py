@@ -42,8 +42,12 @@ def compare_versions(v0_path, v1_path, count):
 
 
 	if os.path.isdir(v0_path) and os.path.isdir(v1_path):
-		count == count_res(v0_path, v1_path, count)	
+		count = count_res(v0_path, v1_path, count)	
 	
+
+	print("Now sub")
+	print(count)
+
 	if os.path.isdir(res0_path) and os.path.isdir(res1_path):
 		return compare_resources(res0_path, res1_path, count)
 	else:
@@ -52,39 +56,41 @@ def compare_versions(v0_path, v1_path, count):
 def count_res(v0, v1, count):
 	resoures = [fI for fI in os.listdir(v0) if os.path.isfile(os.path.join(v0,fI))]
 
-	print("v0")
-	print(v0)
-	print(resoures)
+	#print("v0 = > ")
+	#print(v0)
+	#print(resoures)
 	Modified = 0
 	Removed = 0
 	for resource in resoures:
 		
 		v0_file = v0 + "/" + resource
 		v1_file = v1 + "/" + resource
-		print(v0_file)
-		print(v1_file)
+		#print(v0_file)
+		#print(v1_file)
 		
 		if (os.path.exists(v1_file)):
 
-			print("Exists")	
+			#print("Exists")	
 			statinfo0 = os.stat(v0_file)
 			statinf1 = os.stat(v1_file)
 
 			if(statinfo0.st_size != statinf1.st_size):
 
-				print("Modified")
+				#print("Modified")
 				Modified += 1
 		else:
-			print("Removed")
+			#print("Removed")
 			Removed += 1
 
 
-	print(str(count))
-	print(Modified)
-	print(Removed)
+	# print(str(count))
+	# print(Modified)
+	# print(Removed)
 
 	count["Modified"] += Modified
 	count["removeOrAdded"]+= Removed
+
+	return count
 
 def compare_resources(v0, v1, count):
 	print("=> " + v0)
@@ -105,7 +111,7 @@ def compare_resources(v0, v1, count):
 
 		if os.path.exists(r1):
 			count = compare_resources(r0,r1, count)
-			print("Here => " + str(count))
+			#print("Here => " + str(count))
 		else:
 			Removed += sum([len(files) for r, d, files in os.walk(r0)])
 
@@ -152,7 +158,7 @@ def count_resources():
 	for cat in cat_folders:
 
 		category_path = fileDir + "/" + cat
-		print("=> " + category_path)
+		print("Category => " + cat)
 
 		cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]
 
@@ -161,7 +167,7 @@ def count_resources():
 		toRemove = []
 		for app in cat_apps:
 			app_path = os.path.join(category_path,app)
-			print("App => " + app_path)
+			print("App => " + app)
 			apks = sorted([dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")])
 			
 			
@@ -188,9 +194,11 @@ def count_resources():
 				print("=> " + n_folder_next)
 
 				try:
-					zip_ref = zipfile.ZipFile(n_folder + ".apk", 'r')
-					zip_ref.extractall(n_folder)
-					zip_ref.close()
+
+					if not os.path.exists(n_folder)
+						zip_ref = zipfile.ZipFile(n_folder + ".apk", 'r')
+						zip_ref.extractall(n_folder)
+						zip_ref.close()
 					#time.sleep(3)
 
 					if (not os.path.exists(n_folder)):
@@ -199,9 +207,10 @@ def count_resources():
 
 					while not done and next_index < apk_count - 1:
 						try:	
-							zip_ref = zipfile.ZipFile(n_folder_next + ".apk", 'r')
-							zip_ref.extractall(n_folder_next )
-							zip_ref.close()
+							if not os.path.exists(n_folder_next)
+								zip_ref = zipfile.ZipFile(n_folder_next + ".apk", 'r')
+								zip_ref.extractall(n_folder_next )
+								zip_ref.close()
 							
 							#time.sleep(3)
 
@@ -227,9 +236,9 @@ def count_resources():
 
 				new_old = compare_versions(n_folder_next, n_folder,  {"removeOrAdded" : 0, "Modified" : 0})
 
-				print("Result")
-				print(old_new)
-				print(new_old)
+				#print("Result")
+				print("Old to New => " + str(old_new))
+				print("New to Old => " + str(new_old))
 
 				count["Removed"].append(old_new["removeOrAdded"])
 				count["Added"].append(new_old["removeOrAdded"])
@@ -249,11 +258,11 @@ def count_resources():
 
 			#time.sleep(2)	
 
-			print("Removing")
-			for r in toRemove:
-				if os.path.exists(r):
-					print(r)
-					shutil.rmtree(r)
+			# print("Removing")
+			# for r in toRemove:
+			# 	if os.path.exists(r):
+			# 		print(r)
+			# 		shutil.rmtree(r)
 
 			toRemove = []
 
@@ -261,6 +270,50 @@ def count_resources():
 	#print(count)
 	
 	save_obj(count, "resources_count")
+
+
+def unzip_apks(category):
+	
+	
+	category_path = "./" + category
+	cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]
+
+		#print(sorted(cat_apps))
+	cat_apps = sorted(cat_apps)
+	for app in cat_apps:
+		app_path = os.path.join(category_path,app)
+		print("App => " + app)
+		apks = sorted([dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")])
+		
+		
+		i += 1
+		j = 1
+
+		apks = sorted(apks)
+
+		total_app = []
+
+		apk_count = len(apks)
+
+		for index in range(apk_count - 1):
+
+			apk = apks[index]
+			
+			n_folder = app_path + "/" +  apk.replace(".apk","") 
+			
+			
+			try:
+				zip_ref = zipfile.ZipFile(n_folder + ".apk", 'r')
+				zip_ref.extractall(n_folder)
+				zip_ref.close()
+			
+
+			except Exception as e:
+				print(e)
+				continue
+			
+
+
 
 	
 
@@ -350,6 +403,8 @@ if __name__ == '__main__':
 		count_resources();
 	elif count_ == 2:
 		combine_resources_count()
+	elif count_ == 3:
+		unzip_apks(category):
 	else:
 		content_csv = []
 
