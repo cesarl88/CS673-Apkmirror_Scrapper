@@ -6,6 +6,9 @@ import re
 import zipfile
 import shutil
 import time
+import sys
+import statistics
+import pickle
 
 def get_woorkbook(workbook, csv_path, name):
 	worksheet = workbook.add_worksheet(name)
@@ -17,6 +20,297 @@ def get_woorkbook(workbook, csv_path, name):
 			for c, col in enumerate(row):
 				worksheet.write(r, c, col)
 
+
+def compare_versions(v0_path, v1_path, count):
+
+	print("Comparing")
+	print("=> " + v0_path)
+	print("=> " + v1_path)
+	print("=> " + str(count))
+	res0_path = ''
+	res1_path = ''
+
+	if os.path.exists(v0_path+"/r"):
+		res0_path = v0_path + "/r"
+	elif os.path.exists(v0_path+"/res"):
+		res0_path = v0_path + "/res"
+
+	if os.path.exists(v1_path+"/r"):
+		res1_path = v1_path + "/r"
+	elif os.path.exists(v1_path+"/res"):
+		res1_path = v1_path + "/res"
+
+	return compare_resources(res0_path, res1_path, count)
+
+			
+
+def compare_resources(v0, v1, count):
+	print("=> " + v0)
+	print("=> " + v1)
+	print("=> " + str(count))
+	#time.sleep(2)
+
+	resoures_folders = [dI for dI in os.listdir(v0) if os.path.isdir(os.path.join(v0,dI))]
+
+	Modified = 0
+	Removed = 0
+	for res in resoures_folders:
+		r0 = v0 + "/" + res
+		r1 = v1 + "/" + res
+
+		if os.path.exists(r1):
+			count = compare_resources(r0,r1, count)
+			print("Here => " + str(count))
+		else:
+			Removed += sum([len(files) for r, d, files in os.walk(r0)])
+
+
+	resoures = [fI for fI in os.listdir(v0) if os.path.isfile(os.path.join(v0,fI))]
+
+	print("v0")
+	print(v0)
+	print(resoures)
+	
+	for resource in resoures:
+		
+		v0_file = v0 + "/" + resource
+		v1_file = v1 + "/" + resource
+		print(v0_file)
+		print(v1_file)
+		
+		if (os.path.exists(v1_file)):
+
+			print("Exists")	
+			statinfo0 = os.stat(v0_file)
+			statinf1 = os.stat(v1_file)
+
+			if(statinfo0.st_size != statinf1.st_size):
+
+				print("Modified")
+				Modified += 1
+		else:
+			print("Removed")
+			Removed += 1
+
+
+	print(str(count))
+	print(Modified)
+	print(Removed)
+
+	count["Modified"] += Modified
+	count["removeOrAdded"]+= Removed
+
+	return count
+
+
+# def does_file_exist_in_dir(path, file):
+#     folders = [dI for dI in os.listdir(path) if os.path.isdir(os.path.join(path,dI))]
+
+#     for folder in folders:
+#     	if (does_file_exist_in_dir(path + "/folder", file)):
+#     		return True
+
+
+# 	files = [fI for fI in os.listdir(path) if os.path.isfile(os.path.join(path,fi))]
+
+# 	files
+
+
+def save_obj(obj, name ):
+    with open('./'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(name):
+    with open('./' + name, 'rb') as f:
+        return pickle.load(f)
+
+
+def count_resources():
+	
+	i = 0
+	count = {"Removed" : [], "Added" : [], "Modified": []}
+
+	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI))]
+
+	print(cat_folders)
+	#sys.exit(0)
+	for cat in cat_folders:
+
+		category_path = fileDir + "/" + cat
+		print("=> " + category_path)
+
+		cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]
+
+		#print(sorted(cat_apps))
+		cat_apps = sorted(cat_apps)
+		toRemove = []
+		for app in cat_apps:
+			app_path = os.path.join(category_path,app)
+			print("App => " + app_path)
+			apks = sorted([dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")])
+			
+			
+			i += 1
+			j = 1
+
+			apks = sorted(apks)
+
+			total_app = []
+
+			apk_count = len(apks)
+
+			for index in range(apk_count - 1):
+
+				next_index = (index + 1) % apk_count
+				apk = apks[index]
+				apk_next = apks[next_index]
+
+				n_folder = app_path + "/" +  apk.replace(".apk","") 
+				n_folder_next = app_path + "/" + apk_next.replace(".apk","")
+
+				print("Comparing")
+				print("=> " + n_folder)
+				print("=> " + n_folder_next)
+
+				try:
+					zip_ref = zipfile.ZipFile(n_folder + ".apk", 'r')
+					zip_ref.extractall(n_folder)
+					zip_ref.close()
+					#time.sleep(3)
+
+					if (not os.path.exists(n_folder)):
+						continue
+					done = False
+
+					while not done and next_index < apk_count - 1:
+						try:	
+							zip_ref = zipfile.ZipFile(n_folder_next + ".apk", 'r')
+							zip_ref.extractall(n_folder_next )
+							zip_ref.close()
+							
+							#time.sleep(3)
+
+							done = True
+						except Exception as e:
+							next_index += 1
+							apk_next = apks[next_index]
+							n_folder_next = app_path + "/" + apk_next.replace(".apk","")
+							print("skipping")
+							print(e)
+							continue
+
+					if (not os.path.exists(n_folder_next)):
+								continue
+
+				except Exception as e:
+					print(e)
+					continue
+				
+
+
+				old_new = compare_versions(n_folder, n_folder_next, {"removeOrAdded" : 0, "Modified" : 0})
+
+				new_old = compare_versions(n_folder_next, n_folder,  {"removeOrAdded" : 0, "Modified" : 0})
+
+				print("Result")
+				print(old_new)
+				print(new_old)
+
+				count["Removed"].append(old_new["removeOrAdded"])
+				count["Added"].append(new_old["removeOrAdded"])
+				count["Modified"].append(old_new["Modified"])
+
+				#lib_count = sum([len(files) for r, d, files in os.walk(n_folder+"/lib")])
+				#r_count = sum([len(files) for r, d, files in os.walk(n_folder+"/r")])
+				#r_count += sum([len(files) for r, d, files in os.walk(n_folder+"/res")])
+
+				toRemove.append(n_folder)
+				toRemove.append(n_folder_next)
+				# print("Removing " + n_folder)
+				# shutil.rmtree(n_folder)
+				# print("Removing " + n_folder_next)
+				# shutil.rmtree(n_folder_next)
+				j += 1
+
+			#time.sleep(2)	
+
+			print("Removing")
+			for r in toRemove:
+				if os.path.exists(r):
+					print(r)
+					shutil.rmtree(r)
+
+			toRemove = []
+
+
+	#print(count)
+	
+	save_obj(count, "resources_count")
+
+	
+
+
+def combine_resources_count():
+	print("Count Resources")
+	workbook = xlsxwriter.Workbook('Summary_resources_changes.xlsx')
+	
+	worksheet = workbook.add_worksheet("Resources Summary")
+	worksheet.write(0, 0, 'Type')
+	worksheet.write(0, 1, 'Added')
+	worksheet.write(0, 2, 'Removed')
+	worksheet.write(0, 3, 'Modified')
+
+
+	pkls = sorted([dI for dI in os.listdir("./") if os.path.isfile(os.path.join("./",dI)) and os.path.join("./",dI).endswith(".pkl")])
+
+	#print(pkls)
+	count = {"Removed" : [], "Added" : [], "Modified": []}
+
+	for pkl in pkls:
+		c = load_obj(pkl)
+
+		for r in c["Removed"]:
+			count["Removed"].append(r)
+
+		for r in c["Added"]:
+			count["Added"].append(r)
+
+		for r in c["Modified"]:
+			count["Modified"].append(r)
+
+
+	print("Added => ")
+	print(count["Added"])
+
+
+	worksheet.write(1, 0, 'Total')
+	worksheet.write(1, 1, sum(count["Added"]))
+	worksheet.write(1, 2, sum(count['Removed']))
+	worksheet.write(1, 3, sum(count['Modified']))
+
+	worksheet.write(2, 0, 'Average')
+	worksheet.write(2, 1,  round(sum(count["Added"]) / max(len(count["Added"]),1),2))
+	worksheet.write(2, 2,  round(sum(count["Removed"]) / max(len(count["Removed"]),1),2))
+	worksheet.write(2, 3,  round(sum(count["Modified"]) / max(len(count["Modified"]),1),2))
+
+	worksheet.write(3, 0, 'Median')
+	worksheet.write(3, 1, statistics.median(count["Added"]))
+	worksheet.write(3, 2, statistics.median(count["Removed"]))
+	worksheet.write(3, 3, statistics.median(count["Modified"]))
+
+	worksheet.write(4, 0, 'Min')
+	worksheet.write(4, 1, min(count["Added"]))
+	worksheet.write(4, 2, min(count["Removed"]))
+	worksheet.write(4, 3, min(count["Modified"]))
+
+	worksheet.write(5, 0, 'Max')
+	worksheet.write(5, 1, max(count["Added"]))
+	worksheet.write(5, 2, max(count["Removed"]))
+	worksheet.write(5, 3, max(count["Modified"]))
+
+	workbook.close()	
+
 if __name__ == '__main__':
 
 	pattern = re.compile('[\W_]+')
@@ -27,7 +321,7 @@ if __name__ == '__main__':
 	parser.add_argument('--count', '-c', type=int,
                     help='Minimum number of apks to be a valid app')
 
-	count = 0
+	count_ = 0
 	args = parser.parse_args()
 	category = args.category
 
@@ -37,67 +331,15 @@ if __name__ == '__main__':
 	cat_apps = [dI for dI in os.listdir(category_path) if os.path.isdir(os.path.join(category_path,dI))]
 
 	if args.count:
-		count = args.count
+		count_ = args.count
+
+	total = []
 		
 
-	if count > 0:
-		workbook = xlsxwriter.Workbook(category + '_lib_resources_count.xlsx')
-
-		i = 0
-		for app in cat_apps:
-			app_path = os.path.join(category_path,app)
-			apks = [dI for dI in os.listdir(app_path) if os.path.isfile(os.path.join(app_path,dI)) and os.path.join(app_path,dI).endswith(".apk")]
-
-			name = pattern.sub('', app)
-			name = name[:25] + "_" + str(i)	
-			worksheet = workbook.add_worksheet(name)
-			i += 1
-			j = 1
-
-
-			worksheet.write(0, 0, 'APK')
-			worksheet.write(0, 1, 'Libraries')
-			worksheet.write(0, 2, 'Diff Libraries')
-			worksheet.write(0, 3, 'Resources')
-			worksheet.write(0, 4, 'Diff Resources')
-
-			prev_lib = -999
-			prev_res = -999
-			apks = sorted(apks)
-			for apk in apks:
-
-				worksheet.write(j, 0, apk)
-				n_folder = app_path + "/" +  apk.replace(".apk","")
-
-				print(app_path + "/" + apk)
-				try:
-					zip_ref = zipfile.ZipFile(app_path + "/" + apk, 'r')
-					zip_ref.extractall(n_folder)
-					zip_ref.close()
-				except Exception as e:
-					continue
-				
-
-				lib_count = sum([len(files) for r, d, files in os.walk(n_folder+"/lib")])
-				r_count = sum([len(files) for r, d, files in os.walk(n_folder+"/r")])
-				r_count += sum([len(files) for r, d, files in os.walk(n_folder+"/res")])
-
-				if(prev_res != -999):
-					worksheet.write(j, 2, str(lib_count - prev_lib))
-					worksheet.write(j, 4, str(r_count - prev_res))
-
-
-				worksheet.write(j, 1, str(lib_count))
-				worksheet.write(j, 3, str(r_count))
-
-				prev_res = r_count
-				prev_lib = lib_count
-
-				print("Removing " + n_folder)
-				shutil.rmtree(n_folder)
-				j += 1
-
-				
+	if count_ == 1:
+		count_resources();
+	elif count_ == 2:
+		combine_resources_count()
 	else:
 		content_csv = []
 
@@ -122,7 +364,7 @@ if __name__ == '__main__':
 			get_woorkbook(workbook, csv_path, name)
 			
 		
-	workbook.close()	
+		workbook.close()	
 
 
 
