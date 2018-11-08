@@ -87,13 +87,15 @@ def combine_metrics():
 	set_keys = False
 	for pkl in pkls:
 		c = load_obj(pkl)
-
+		#print(pkl)
+		#print(c)
 		if not set_keys:
 			complete_metrics = c
 			set_keys = True
 		else:
 			for key, value in c.items():
 				for it in value:
+					print(key)
 					complete_metrics[key].append(it)
 
 
