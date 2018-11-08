@@ -223,6 +223,7 @@ def getAppCategoryPage(Category, page):
 	fileDir = os.path.dirname(os.path.abspath(__file__)) 
 	url = "https://apkpure.com/"+Category
 
+	print(url)
 	querystring = {"page": str(page), "ajax":"1"}
 
 
@@ -443,20 +444,21 @@ def analyze_android_versions():
 
 def combine_android_versions():
 	pattern = re.compile('[\W_]+')
-	workbook = xlsxwriter.Workbook('Summary_Versions.xlsx')
+	workbook = xlsxwriter.Workbook('combined_android_versions.xlsx')
 
 	pkls = sorted([dI for dI in os.listdir("./") if os.path.isfile(os.path.join("./",dI)) and os.path.join("./",dI).endswith(".pkl")])
 
 	lst = []
 	for pkl in pkls:
 		c = load_obj(pkl)
-		
-		for i in c:
-			lst.append(c)
 
+		for i in c:
+			lst.append(i)
+
+	#print(len(lst))
 	worksheet = workbook.add_worksheet("Summary")
 	worksheet.write(0, 0, "Total")	
-	worksheet.write(1, 0, str(sum(lst)))
+	worksheet.write(1, 0, sum(lst))
 	worksheet.write(0, 1, "Average")	
 	worksheet.write(1, 1, str(round(sum(lst) / max(len(lst),1),2)))
 	worksheet.write(0, 2, "Min")	
@@ -535,7 +537,7 @@ if __name__ == '__main__':
 
 	if(analyze_technology == 1):
 		analyze_android_versions()
-	elif if(analyze_technology == 2):			
+	elif(analyze_technology == 2):			
 		combine_android_versions()
 	else:
 
