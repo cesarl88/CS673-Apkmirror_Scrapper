@@ -368,6 +368,8 @@ def count_res_ver_2(v0, v1, count):
 					count["drawable"]["Modified"] += 1
 				if(pa_color.search(v1_file)):
 					count["color"]["Modified"] += 1
+				elif(pa_anim.search(v1_file)):
+					count["animation"]["Modified"] += 1
 				elif(pa_layout.search(v1_file)):
 					count["layout"]["Modified"] += 1
 				elif(pa_menu.search(v1_file)):
@@ -386,6 +388,8 @@ def count_res_ver_2(v0, v1, count):
 			#print("Removed")
 			if(pa_drawable.search(v1_file)):
 					count["drawable"]["removeOrAdded"] += 1
+			elif(pa_anim.search(v1_file)):
+					count["animation"]["removeOrAdded"] += 1
 			elif(pa_color.search(v1_file)):
 					count["color"]["removeOrAdded"] += 1
 			elif(pa_layout.search(v1_file)):
