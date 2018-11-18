@@ -378,9 +378,15 @@ def main(LocalPath, Category, option):
 							complete_metrics[k].append(metrics[k])
 
 
+						added = ('|'.join(metrics["{}addedLines".format(b)]))
+						removed = ('|'.join(metrics["{}removedLines".format(b)]))
 
-						csv_file += '|'.join(metrics["{}addedLines".format(b)]) +  ','
-						csv_file += '|'.join(metrics["{}removedLines".format(b)]) +  ','	
+						added = (added.replace(',',";"))
+						removed = (removed.replace(',',";"))
+
+
+						csv_file += added + ','#'|'.join(metrics["{}addedLines".format(b)]).replace(',',";") +  ','
+						csv_file += removed + ','#'|'.join(metrics["{}removedLines".format(b)]).replace(',',";") +  ','	
 
 						csv_file += '\n'
 					
