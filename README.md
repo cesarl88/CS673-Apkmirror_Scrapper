@@ -86,7 +86,7 @@ TOOLS(19).txt
 where TOOLs is the category and 19 the number of apps that have the 12 apks versions.
 
 
-<h>apkpure_parse.py</h>h>
+<h>apkpure_parse.py</h>
 
 usage: apkpure_parse.py [-h] [--start-page START_PAGE] [--end-page END_PAGE]
                         [--max-date MAX_DATE] [--min-apks MIN_APKS]
@@ -124,6 +124,28 @@ optional arguments:
 Sample:
 python apkpure_parse.py tools -s 1 -e 2 -d '2016-12-31' -min 12 -max 12 -months 1 -days 1 -sleep 30
 
+<h>dalvik_analysis.py</h>
+
+usage: dalvik_analysis.py [-h] [--analize-dalvik-table ANALIZE_DALVIK_TABLE]
+                          [--generate-dalvik-table GENERATE_DALVIK_TABLE]
+                          [--print-dalvik-table PRINT_DALVIK_TABLE]
+                          [--print-dalvik-table-an PRINT_DALVIK_TABLE_AN]
+
+Process some integers.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --analize-dalvik-table ANALIZE_DALVIK_TABLE, -a ANALIZE_DALVIK_TABLE
+                        Analize Dalvik
+  --generate-dalvik-table GENERATE_DALVIK_TABLE, -d GENERATE_DALVIK_TABLE
+                        Generate Dalvik Table
+  --print-dalvik-table PRINT_DALVIK_TABLE, -p PRINT_DALVIK_TABLE
+                        Print Dalvik Table
+  --print-dalvik-table-an PRINT_DALVIK_TABLE_AN, -pan PRINT_DALVIK_TABLE_AN
+                        Print Dalvik Table Analized
+
+
+this script will analye the dalvik lines added and removed so we can later analyze.
 
 
 
