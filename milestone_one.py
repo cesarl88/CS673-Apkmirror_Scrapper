@@ -70,6 +70,12 @@ class Category:
 		self.avg_dex_size = 0
 		self.median_dex_size = 0
 
+		self.min_sdk = {}
+		self.target_sdk = {}
+		for i in range(28):
+			min_sdk[str(i)] = 0
+			target_sdk[str(i)] = 0
+
 
 	def run_dissasemble(self):
 
@@ -193,6 +199,23 @@ class AppVersion:
 		if(os.path.exists(res_path)):
 
 		self.dex_size = get_dir_size(self.get_apk_dir(), '.dex')
+
+	def get_SDK_info(self):
+		
+		manifest_path = os.path.join(self.get_apk_dir(), 'AndroidManifest.xml'
+
+		manifest_soup = BeautifulSoup(response.content, "xml")
+
+		sdk_tag = soup.find_all('uses-sdk')
+
+		min_sdk = sdk_tag['android:minSdkVersion']
+		target_sdk = sdk_tag['android:targetSdkVersion']
+		
+		self.application.category.min_sdk[min_sdk] += 1
+		self.application.category.target_sdk[target_sdk] += 1
+
+		self.min_sdk = int(min_sdk)
+		self.target_sdk = int(target_sdk)
 
 	def get_smali(self):
 
@@ -557,7 +580,7 @@ class Application:
 
 	def process_resources(self):
 		
-		if(regenerate_res)
+		if(regenerate_res):
 			remove_apk_folder()
 
 		for i in range(len(app.versions) - 1):
@@ -566,7 +589,8 @@ class Application:
 			if not version.extract_resources()
 				continue
 			# Check APK size composition
-			version.check_apk_size();
+			version.check_apk_size()
+			version.get_SDK_info()
 
 			nextI = (i + 1) % len(app.versions)
 			while nextI < len(app.versions) - 1:
