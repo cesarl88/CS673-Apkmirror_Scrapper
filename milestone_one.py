@@ -47,24 +47,31 @@ class Category:
 		self.name = name
 		self.applications = []
 		self.metrics = {}
+
 		self.min_min_sdk = 0
 		self.max_min_sdk = 0
+		
 		self.min_target_sdk = 0
 		self.max_target_sdk = 0
+		
 		self.min_release_date = '1999-01-01'
 		self.max_release_date = '1999-01-01'
+		
 		self.min_apk_size = 0
 		self.max_apk_size = 0
 		self.avg_apk_size = 0
 		self.median_apk_size = 0
+		
 		self.min_lib_size = 0
 		self.max_lib_size = 0
 		self.avg_lib_size = 0
 		self.median_lib_size = 0
+		
 		self.min_res_size = 0
 		self.max_res_size = 0
 		self.avg_res_size = 0
 		self.median_res_size = 0
+		
 		self.min_dex_size = 0
 		self.max_dex_size = 0
 		self.avg_dex_size = 0
@@ -75,6 +82,8 @@ class Category:
 		for i in range(28):
 			min_sdk[str(i)] = 0
 			target_sdk[str(i)] = 0
+
+
 
 
 	def run_dissasemble(self):
@@ -569,9 +578,13 @@ class Application:
 
 			# csv_file += '\n'
 
-	def extract_apks():
+	def extract_apks(self):
 		for v in self.versions:
-			v.extract_resources();
+			if not v.extract_resources():
+				continue
+			# Check APK size composition
+			version.check_apk_size()
+			version.get_SDK_info()
 
 
 	def remove_apk_folder():
@@ -583,14 +596,14 @@ class Application:
 		if(regenerate_res):
 			remove_apk_folder()
 
+		# Perform the extraction separate to avoid double extraction work while moving every two version
+		self.extract_apks()
+
 		for i in range(len(app.versions) - 1):
 			
 			version = app.versions[i]
-			if not version.extract_resources()
+			if not version.extract_resources():
 				continue
-			# Check APK size composition
-			version.check_apk_size()
-			version.get_SDK_info()
 
 			nextI = (i + 1) % len(app.versions)
 			while nextI < len(app.versions) - 1:
@@ -600,9 +613,6 @@ class Application:
 				next_version.compare_res_content(version)
 				#check apk sizes diff 
 				next_version.compare_apk_content(version)
-			while j > 1:
-				prev = (j - 1 + len(app.versions)) % len(app.versions)
-				prev_version = app.versions[prev]
 
 				
 
