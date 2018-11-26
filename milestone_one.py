@@ -1071,7 +1071,7 @@ def find_category(name):
 def parse_csv_apk_mirror(cat):
 
 	print("Loading Categories")
-	load_categories()
+	#load_categories()
 
 	print("Parsing CSVs from apk mirror")
 
@@ -1113,7 +1113,7 @@ def parse_csv_apk_mirror(cat):
 					print(version.version + " added")
 
 				cat.applications.append(app_obj)	
-				save_obj(category_obj, category_obj.name, ext)				
+				save_obj(cat, cat.name, ext)				
 
 
 
