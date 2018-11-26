@@ -1033,7 +1033,7 @@ class Category:
 			app.process_resources()
 			app.is_resources_done = True
 			save_obj(self, self.name, ext)
-			sys.exit(0)
+			#sys.exit(0)
 
 	def analize_dalvik(self):
 		for app in self.applications:
@@ -1259,7 +1259,7 @@ def run_apktool(path):
 	path = os.path.join(fileDir, path.replace('./', ''))
 	outpath = os.path.join(fileDir, path.replace('.apk', '_apktool'))
 	if not os.path.exists(path):
-		#print(path + " not found")
+		print(path + " not found")
 		return False
 
 	if os.path.exists(outpath):
@@ -1269,7 +1269,8 @@ def run_apktool(path):
 		if verbose:
 			print(Command)
 		os.system(Command)
-		return True
+
+		return os.path.exists(outpath)
 	except Exception as e:
 		print(e)
 		print("Error on apktool d " + path)
