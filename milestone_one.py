@@ -579,7 +579,7 @@ class Application:
 						metrics["#M+"] =  mnew + mnewin
 						Metrics.computeMetrics(diff, metrics, "", True, False)
 						print("About to print ")
-						print(metrics)
+						#print(metrics)
 						next_version.metrics = metrics
 						print(next_version.metrics)
 						Compared = True
@@ -602,14 +602,24 @@ class Application:
 				print(e)
 				continue
 				#sys.exit(0)
+			bases = [""]
+			#headers_printed = False
+			#headers= ""
 			
-			if not self.category.set_total_metrics:
-				self.category.metrics = dict.fromkeys(next_version.metrics.keys(), [])
-				self.category.set_total_metrics = True
+			
+			for b in bases:
+				if not self.category.set_total_metrics or not self.category.metrics:
+					for k in filter(lambda x: type(next_version.metrics[x]) != set and x.startswith(b), next_version.metrics.keys()):
+						self.category.metrics[k[len(b):]] = []
+				self.category.set_total_metrics = bool(self.category.metrics)
+				#print(self.category.metrics)
+				#self.category.metrics = dict.fromkeys(next_version.metrics.keys(), [])
+				
 
-			for k in filter(lambda x: type(next_version.metrics[x]) != set, next_version.metrics.keys()):
-				print(k +": "+ str(next_version.metrics[k]))
+			for k in filter(lambda x: type(next_version.metrics[x]) != set and x.startswith(b), next_version.metrics.keys()):
+				#print(k +" : "+ str(next_version.metrics[k]))
 				self.category.metrics[k].append(next_version.metrics[k])
+				#print(self.category.metrics[k])
 
 			print("Saving categories")
 			save_obj(self.category,self.category.name, ext)
@@ -954,6 +964,7 @@ class Category:
 		if verbose:
 
 			print("+- " + self.name )
+			
 			if  option == 1:
 				print(" - apk_sizes: ", self.apk_sizes)
 				print(" - dex_sizes: ", self.dex_sizes)
@@ -980,6 +991,15 @@ class Category:
 				print("platform_sdk_sdk: " + str(self.platform_sdk))
 			elif option == 4:
 				print("metrics: " + str(self.metrics))
+			elif option == 5:
+				done_apps = [a for a in self.applications if a.is_differencer_done]
+				print(" +- Apps")
+
+				for app in done_apps:
+					print("  - " + app.name)
+					versions = [v for v in app.versions if v.metrics]
+					for v in versions:
+						print("   - " + v.version)
 
 
 
@@ -1048,55 +1068,52 @@ def find_category(name):
 
 	return None
 
-def parse_csv_apk_mirror():
+def parse_csv_apk_mirror(cat):
 
 	print("Loading Categories")
 	load_categories()
 
 	print("Parsing CSVs from apk mirror")
 
-	root = '.'
+	root = '.' 
 
-	categories = sorted([dI for dI in os.listdir(root) if os.isdir(os.path.join(root, dI))])
+	print("Processing category(" + cat.name + ")")
 
 
-	for cat in categories:
-		print("Processing category(" + cat + ")")
+	cat_path = os.path.join(root, cat.name)
+	apps = sorted([dI for dI in os.listdir(cat_path) if os.path.isdir(os.path.join(cat_path, dI))])
 
-		category_obj = find_category(cat)
+	for app in apps:
+		print("Processing applicaions for (" + cat.name + ")")
+		app_path = os.path.join(cat_path, app)
 
-		cat_path = os.path.join(root, cat)
-		apps = sorted([dI for dI in os.listdir(root) if os.path.isdir(os.path.join(root, dI))])
+		csv_description_path = os.path.join(app_path, app + "_Description.csv")
 
-		for app in apps:
-			print("Processing applicaion(" + cat + ")")
-			app_path = os.path.join(cat_path, app)
+		print("Looking for: " + csv_description_path)
+		app_obj = cat.find_application(app)
+		if(os.path.exists(csv_description_path) and app_obj == None):
 
-			csv_description_path = os.join(app_path, app + "_Description.csv")
+			with open(csv_description_path) as csv_file:
+				print("Csv Found")
+				csv_reader = csv.reader(csv_file, delimiter = ",")
+				line_count = 0
 
-			app_obj = category_obj.find_application(app)
-			if(os.path.exists(csv_description_path) and app_obj == None):
+				app_obj = Application(cat, app, 'http://apkmirror.com')
+				app_obj.is_apk_mirror = True
+				t = 0
+				for row in csv_reader:
+					if(t == 0):
+						t = 1
+						continue
+					print(row)
+					version = AppVersion(app_obj, row[0], row[3], row[1], 0, 'Android')		
+					version.is_downloaded = True
+					app_obj.versions.append(version)
 
-				with open(csv_description_path) as csv_file:
-					print("Csv Found")
-					csv_reader = csv.reader(csv_file, delimiter = ",")
-					line_count = 0
+					print(version.version + " added")
 
-					app_obj = Application(category_obj, app, 'http://apkmirror.com')
-					app_obj.is_apk_mirror = True
-					t = 0
-					for row in csv_reader:
-						if(t == 0):
-							t = 1
-							continue;
-						version = AppVersion(app_obj, row(0), row(3), row(1), 0, 'Android')		
-						version.is_downloaded = True
-						app_obj.versions.append(version)
-
-						print(version.version + " added")
-
-					category_obj.applications.append(app_obj)	
-					save_obj(category_obj, category_obj.name, ext)				
+				cat.applications.append(app_obj)	
+				save_obj(category_obj, category_obj.name, ext)				
 
 
 
@@ -1620,10 +1637,12 @@ if __name__ == '__main__':
 	if args.load_categories:
 		print("Loading categories_list")
 	elif args.parse_csv_apk_mirror:
-		parse_csv_apk_mirror()
+		cat = load_obj(category_pkl,ext)
+		parse_csv_apk_mirror(cat)
 	elif args.print_categories:
 		cat = load_obj(category_pkl,ext)
 		cat.print(1)
+		cat.print(5)
 		cat.print(2)
 		cat.print(3)
 		cat.print(4)
