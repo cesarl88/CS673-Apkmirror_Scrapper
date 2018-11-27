@@ -1032,11 +1032,11 @@ class Category:
 				done_apps_m = [a for a in self.applications if a.is_differencer_done]
 				print(" +- Apps resources done(" + str(len(done_apps_r)) + "),  metrics done(" + str(len(done_apps_m)) + ")")
 
-				#for app in done_apps:
-				#	print("  - " + app.name)
-				#	versions = [v for v in app.versions if v.metrics]
-				#	for v in app.versions:
-				#		print("   - " + v.version)
+				for app in done_apps_r:
+					print("  - " + app.name)
+					versions = [v for v in app.versions if v.metrics]
+					for v in app.versions:
+						print("   - " + v.version)
 
 
 
