@@ -31,6 +31,8 @@ pkl_dalvik_opcodes_an = "dalvik_opcodes_an"
 dalvik_opcodes = []
 dalvik_opcodes_an = []
 dalvik_apps = []	
+dalvik_op = {}
+dalvik_op_cat = {}
 
 ext = ".pkl"
 exclude_lists = ['./exclusionlist/exclusionlist.txt', './exclusionlist/Merge.txt']
@@ -131,7 +133,10 @@ class AppVersion:
 		return os.path.join(self.application.get_path(), _removeNonAscii(self.version).replace(".", "_").replace(" ","_") + "_apktool")
 
 	def get_date(self):
-		return datetime.strptime(self.date, "%Y-%m-%d")
+		try:
+			return datetime.strptime(self.date, '%Y-%m-%d')
+		except ValueError:
+			return datetime.strptime(self.date, " %B %d  %Y")
 
 	def reprJSON(self):
 		return self.__dict__
@@ -199,7 +204,10 @@ class AppVersion:
 				if manifest_tag.has_attr('platformBuildVersionCode'):
 					platform_sdk = manifest_tag['platformBuildVersionCode']
 					self.platform_sdk = int(platform_sdk)
-					self.application.category.platform_sdk[platform_sdk] += 1
+					if(platform_sdk in self.application.category.platform_sdk):
+						self.application.category.platform_sdk[platform_sdk] += 1
+					else:
+						self.application.category.platform_sdk[platform_sdk] = 1
 					print("platformBuildVersionCode: " + platform_sdk)
 
 			if sdk_tag:
@@ -209,7 +217,12 @@ class AppVersion:
 
 				if  sdk_tag.has_attr('android:minSdkVersion'):
 					min_sdk = sdk_tag['android:minSdkVersion']
-					self.application.category.min_sdk[min_sdk] += 1
+
+					if(min_sdk in self.application.category.min_sdk):
+						self.application.category.min_sdk[min_sdk] += 1
+					else:
+						self.application.category.min_sdk[min_sdk] = 1
+					
 					self.min_sdk = int(min_sdk)
 					print("targetSdkVersion: " + min_sdk)
 
@@ -217,7 +230,12 @@ class AppVersion:
 
 				if  sdk_tag.has_attr('android:targetSdkVersion'):
 					target_sdk = sdk_tag['android:targetSdkVersion']
-					self.application.category.target_sdk[target_sdk] += 1
+
+					if(target_sdk in self.application.category.target_sdk):
+						self.application.category.target_sdk[target_sdk] += 1
+					else: 
+						self.application.category.target_sdk[target_sdk] = 1
+
 					self.target_sdk = int(target_sdk)
 					print("targetSdkVersion: " + target_sdk)
 
@@ -253,9 +271,10 @@ class AppVersion:
 		#global regenerate_res
 		
 		res_path = self.get_apk_dir()
+		print("exists: "+ res_path)
 		if(not os.path.exists(res_path)):
 			path = self.get_apk_path()
-			#print("Checking " + path)
+			print("Checking " + path)
 			return run_apktool(path)
 		else: 
 			# if(regenerate_res):
@@ -276,162 +295,165 @@ class AppVersion:
 		
 		res0_dir = prev_version.get_res_dir();
 		res1_dir = self.get_res_dir();
-		#print("res0_dir" + res0_dir)
-		#print("res1_dir" + res1_dir)
+
+		if(os.path.exists(res0_dir) and os.path.exists(res1_dir)):
+
+			#print("res0_dir" + res0_dir)
+			#print("res1_dir" + res1_dir)
 
 
-		v0_resoures_folders = [dI for dI in os.listdir(res0_dir) if os.path.isdir(os.path.join(res0_dir,dI)) and dI.startswith('layout')]
-		v1_resoures_folders = [dI for dI in os.listdir(res1_dir) if os.path.isdir(os.path.join(res1_dir,dI)) and dI.startswith('layout')]
+			v0_resoures_folders = [dI for dI in os.listdir(res0_dir) if os.path.isdir(os.path.join(res0_dir,dI)) and dI.startswith('layout')]
+			v1_resoures_folders = [dI for dI in os.listdir(res1_dir) if os.path.isdir(os.path.join(res1_dir,dI)) and dI.startswith('layout')]
 
 
-		#print("v0_resoures_folders" + str(v0_resoures_folders))
-		#print("v1_resoures_folders" + str(v1_resoures_folders))
+			#print("v0_resoures_folders" + str(v0_resoures_folders))
+			#print("v1_resoures_folders" + str(v1_resoures_folders))
 
-		#comparing changes and deletions from previous to new
-		print("comparing changes and deletions from previous to new")
+			#comparing changes and deletions from previous to new
+			print("comparing changes and deletions from previous to new")
 
-		for l0 in v0_resoures_folders:
-			l0_dir  = os.path.join(res0_dir, l0)
-			l1_dir  = os.path.join(res1_dir, l0)
+			for l0 in v0_resoures_folders:
+				l0_dir  = os.path.join(res0_dir, l0)
+				l1_dir  = os.path.join(res1_dir, l0)
 
-			files  = [f for f in os.listdir(l0_dir) if os.path.isfile(os.path.join(l0_dir, f))]
+				files  = [f for f in os.listdir(l0_dir) if os.path.isfile(os.path.join(l0_dir, f))]
 
-			if(not os.path.exists(l1_dir)):
-				self.res_layout_removal = len(files)
-				qualifiers = l0.split('-')
-				if len(qualifiers) > 0:
+				if(not os.path.exists(l1_dir)):
+					self.res_layout_removal = len(files)
+					qualifiers = l0.split('-')
+					if len(qualifiers) > 0:
 
-					for qual in qualifiers:
-						if(qual == 'ldrtl' or qual == 'ldltr'):
-							self.res_rem_direction_support += 1
-						elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
-							self.res_rem_size_support += 1
-						elif(qual == 'port' or qual == 'land'):
-							self.res_rem_size_support += 1
-						elif(qual.endswith('dpi')):
-							self.res_rem_dpi_support += 1
-						elif(pa_swidth.search(qual)):
-							self.res_rem_size_support += 1
-						elif(pa_width.search(qual)):
-							self.res_rem_size_support += 1
-						elif(pa_height.search(qual)):
-							self.res_rem_size_support += 1
-						elif(pa_platform.search(qual)):
-							self.res_rem_platform_support += 1
-			else:
+						for qual in qualifiers:
+							if(qual == 'ldrtl' or qual == 'ldltr'):
+								self.res_rem_direction_support += 1
+							elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
+								self.res_rem_size_support += 1
+							elif(qual == 'port' or qual == 'land'):
+								self.res_rem_size_support += 1
+							elif(qual.endswith('dpi')):
+								self.res_rem_dpi_support += 1
+							elif(pa_swidth.search(qual)):
+								self.res_rem_size_support += 1
+							elif(pa_width.search(qual)):
+								self.res_rem_size_support += 1
+							elif(pa_height.search(qual)):
+								self.res_rem_size_support += 1
+							elif(pa_platform.search(qual)):
+								self.res_rem_platform_support += 1
+				else:
 
-				for f in files:
-					f0_path = os.path.join(l0_dir, f)
-					f1_path = os.path.join(l1_dir, f) 
-					#print(f0_path)
-					#print(f1_path)
+					for f in files:
+						f0_path = os.path.join(l0_dir, f)
+						f1_path = os.path.join(l1_dir, f) 
+						#print(f0_path)
+						#print(f1_path)
+						
+						if(os.path.exists(f1_path)):
+							#run md5
+							output0 = ''
+							output1 = ''
+
+							cmd = "md5sum '" + f0_path +"'"
+							p = subprocess.Popen(cmd, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
+							(output0, err) = p.communicate()
+
+
+							cmd = "md5sum '" + f1_path +"'"
+							p = subprocess.Popen(cmd, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
+							(output1, err) = p.communicate()
+
+							
+							out_0 = str(output0).split(' ')
+							out_1 = str(output1).split(' ')	
+							#print(out_0[0] +" != "+ out_1[0])
+							if(out_0[0] != out_1[0]):
+								self.res_layout_changes += 1
+								#print("self.res_layout_changes " + str(self.res_layout_changes))
+						else:
+							qualifiers = l0.split('-')
+							#print(qualifiers)
+							if len(qualifiers) > 0:
+								for qual in qualifiers:
+									if(qual == 'ldrtl' or qual == 'ldltr'):
+										self.res_rem_direction_support += 1
+									elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
+										self.res_rem_size_support += 1
+									elif(qual == 'port' or qual == 'land'):
+										self.res_rem_size_support += 1
+									elif(qual.endswith('dpi')):
+										self.res_rem_dpi_support += 1
+									elif(pa_swidth.search(qual)):
+										self.res_rem_size_support += 1
+									elif(pa_width.search(qual)):
+										self.res_rem_size_support += 1
+									elif(pa_height.search(qual)):
+										self.res_rem_size_support += 1
+									elif(pa_platform.search(qual)):
+										self.res_rem_platform_support += 1
+
+			#comparing additions from  new to previous
+			print("comparing additions from  new to previous")
+			for l1 in v1_resoures_folders:
+				l0_dir  = os.path.join(res0_dir, l1)
+				l1_dir  = os.path.join(res1_dir, l1)
+
+				files  = [f for f in os.listdir(l1_dir) if os.path.isfile(os.path.join(l1_dir, f))]
+
+				if(not os.path.exists(l0_dir)):
+					self.res_layout_addition = len(files)
+					qualifiers = l1.split('-')
+					#print(qualifiers)
+					if len(qualifiers) > 0:
+
+						for qual in qualifiers:
+							if(qual == 'ldrtl' or qual == 'ldltr'):
+								self.res_direction_support += 1
+							elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
+								self.res_size_support += 1
+							elif(qual == 'port' or qual == 'land'):
+								self.res_size_support += 1
+							elif(qual.endswith('dpi')):
+								self.res_dpi_support += 1
+							elif(pa_swidth.search(qual)):
+								self.res_size_support += 1
+							elif(pa_width.search(qual)):
+								self.res_size_support += 1
+							elif(pa_height.search(qual)):
+								self.res_size_support += 1
+							elif(pa_platform.search(qual)):
+								self.res_platform_support += 1
+				else:
+					for f in files:
+						f0_path = os.path.join(l0_dir, f)
+						f1_path = os.path.join(l1_dir, f) 
+							
+						#print(f0_path)
+						#print(f1_path)
+
+
+						if(not os.path.exists(f0_path)):
+							self.res_layout_addition += 1
+							qualifiers = l1.split('-')
+							#print(qualifiers)
+							if len(qualifiers) > 0:
+								for qual in qualifiers:
+									if(qual == 'ldrtl' or qual == 'ldltr'):
+										self.res_rem_direction_support += 1
+									elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
+										self.res_rem_size_support += 1
+									elif(qual == 'port' or qual == 'land'):
+										self.res_rem_size_support += 1
+									elif(qual.endswith('dpi')):
+										self.res_rem_dpi_support += 1
+									elif(pa_swidth.search(qual)):
+										self.res_rem_size_support += 1
+									elif(pa_width.search(qual)):
+										self.res_rem_size_support += 1
+									elif(pa_height.search(qual)):
+										self.res_rem_size_support += 1
+									elif(pa_platform.search(qual)):
+										self.res_rem_platform_support += 1
 					
-					if(os.path.exists(f1_path)):
-						#run md5
-						output0 = ''
-						output1 = ''
-
-						cmd = "md5sum '" + f0_path +"'"
-						p = subprocess.Popen(cmd, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
-						(output0, err) = p.communicate()
-
-
-						cmd = "md5sum '" + f1_path +"'"
-						p = subprocess.Popen(cmd, shell=True, stdout = subprocess.PIPE,  stderr=subprocess.PIPE)
-						(output1, err) = p.communicate()
-
-						
-						out_0 = str(output0).split(' ')
-						out_1 = str(output1).split(' ')	
-						#print(out_0[0] +" != "+ out_1[0])
-						if(out_0[0] != out_1[0]):
-							self.res_layout_changes += 1
-							#print("self.res_layout_changes " + str(self.res_layout_changes))
-					else:
-						qualifiers = l0.split('-')
-						#print(qualifiers)
-						if len(qualifiers) > 0:
-							for qual in qualifiers:
-								if(qual == 'ldrtl' or qual == 'ldltr'):
-									self.res_rem_direction_support += 1
-								elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
-									self.res_rem_size_support += 1
-								elif(qual == 'port' or qual == 'land'):
-									self.res_rem_size_support += 1
-								elif(qual.endswith('dpi')):
-									self.res_rem_dpi_support += 1
-								elif(pa_swidth.search(qual)):
-									self.res_rem_size_support += 1
-								elif(pa_width.search(qual)):
-									self.res_rem_size_support += 1
-								elif(pa_height.search(qual)):
-									self.res_rem_size_support += 1
-								elif(pa_platform.search(qual)):
-									self.res_rem_platform_support += 1
-
-		#comparing additions from  new to previous
-		print("comparing additions from  new to previous")
-		for l1 in v1_resoures_folders:
-			l0_dir  = os.path.join(res0_dir, l1)
-			l1_dir  = os.path.join(res1_dir, l1)
-
-			files  = [f for f in os.listdir(l1_dir) if os.path.isfile(os.path.join(l1_dir, f))]
-
-			if(not os.path.exists(l0_dir)):
-				self.res_layout_addition = len(files)
-				qualifiers = l1.split('-')
-				#print(qualifiers)
-				if len(qualifiers) > 0:
-
-					for qual in qualifiers:
-						if(qual == 'ldrtl' or qual == 'ldltr'):
-							self.res_direction_support += 1
-						elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
-							self.res_size_support += 1
-						elif(qual == 'port' or qual == 'land'):
-							self.res_size_support += 1
-						elif(qual.endswith('dpi')):
-							self.res_dpi_support += 1
-						elif(pa_swidth.search(qual)):
-							self.res_size_support += 1
-						elif(pa_width.search(qual)):
-							self.res_size_support += 1
-						elif(pa_height.search(qual)):
-							self.res_size_support += 1
-						elif(pa_platform.search(qual)):
-							self.res_platform_support += 1
-			else:
-				for f in files:
-					f0_path = os.path.join(l0_dir, f)
-					f1_path = os.path.join(l1_dir, f) 
-						
-					#print(f0_path)
-					#print(f1_path)
-
-
-					if(not os.path.exists(f0_path)):
-						self.res_layout_addition += 1
-						qualifiers = l1.split('-')
-						#print(qualifiers)
-						if len(qualifiers) > 0:
-							for qual in qualifiers:
-								if(qual == 'ldrtl' or qual == 'ldltr'):
-									self.res_rem_direction_support += 1
-								elif(qual == 'small' or qual == 'normal' or qual == 'large' or qual == 'xlarge'):
-									self.res_rem_size_support += 1
-								elif(qual == 'port' or qual == 'land'):
-									self.res_rem_size_support += 1
-								elif(qual.endswith('dpi')):
-									self.res_rem_dpi_support += 1
-								elif(pa_swidth.search(qual)):
-									self.res_rem_size_support += 1
-								elif(pa_width.search(qual)):
-									self.res_rem_size_support += 1
-								elif(pa_height.search(qual)):
-									self.res_rem_size_support += 1
-								elif(pa_platform.search(qual)):
-									self.res_rem_platform_support += 1
-				
 
 
 
@@ -470,6 +492,7 @@ class Application:
 
 	
 	def analize_dalvik(self):
+		global dalvik_op_cat
 		for version in self.versions:
 			if not version.is_downloaded:
 				continue
@@ -477,26 +500,37 @@ class Application:
 			if not version.metrics:
 				continue
 
+			bases = [""]
+			
+			
+			tt= 0
+			for b in bases:
+				if not self.category.set_total_metrics or not self.category.metrics:
+					for k in filter(lambda x: type(next_version.metrics[x]) != set and x.startswith(b), next_version.metrics.keys()):
+						t+=1
+
 			added = ('|'.join(version.metrics["{}addedLines".format(b)]))
 			removed = ('|'.join(version.metrics["{}removedLines".format(b)]))
 
-			addedlines = row[added_index].split('|')
-			removedlines = row[removed_index].split('|')
+			addedlines = added.split('|')
+			removedlines = removed.split('|')
+			#print(addedlines)
+			#print(removedlines)
 			
 			for a in addedlines:
-				ind = dalvik_opcodes_an_index_of(a)
+				ind = dalvik_opcodes_an_index_of(dalvik_op_cat[self.category], a)
 				if(ind > -1):
-					dalvik_opcodes_an[ind].added += 1
+					dalvik_op_cat[self.category][ind].added += 1
 
 			for r in removedlines:
-				ind = dalvik_opcodes_an_index_of(r)
+				ind = dalvik_opcodes_an_index_of(dalvik_op_cat[self.category],r)
 				if(ind > -1):
-					dalvik_opcodes_an[ind].removed += 1
+					dalvik_op_cat[self.category][ind].removed += 1
 
 
 
 	def analize_differences(self):
-		size = len(self.versions) - 1
+		size = len(self.versions)
 
 
 		for i in range(size, 0, -1):
@@ -668,7 +702,7 @@ class Application:
 		self.category.print(4)
 
 	def extract_apks(self):
-		for i in range(len(self.versions) - 1, 0, -1):
+		for i in range(len(self.versions), 0, -1):
 			v = self.versions[i]
 			if not v.extract_resources():
 				continue
@@ -694,7 +728,7 @@ class Application:
 		print("extracting apk content")
 		self.extract_apks()
 
-		for i in range(len(self.versions) - 1, 0, -1):
+		for i in range(len(self.versions), 0, -1):
 			
 
 			version = self.versions[i]
@@ -867,7 +901,7 @@ class Application:
 		androidVersions = []
 
 
-		for i in range(len(self.versions) - 1):
+		for i in range(len(self.versions)):
 			next_i = (i + 1) % len(self.versions)
 
 			v0 = self.versions[i]
@@ -896,8 +930,8 @@ class Category:
 		self.max_target_sdk = 0
 		self.platform_sdk = 0
 
-		self.min_release_date = '1999-01-01'
-		self.max_release_date = '1999-01-01'
+		self.min_release_date = datetime.strptime('1999-01-01', "%Y-%m-%d")
+		self.max_release_date = datetime.strptime('1999-01-01', "%Y-%m-%d")
 		
 		self.min_apk_size = 0
 		self.max_apk_size = 0
@@ -949,7 +983,7 @@ class Category:
 		self.min_sdk = {}
 		self.target_sdk = {}
 		self.platform_sdk = {}
-		for i in range(28):
+		for i in range(29):
 			self.min_sdk[str(i)] = 0
 			self.target_sdk[str(i)] = 0
 			self.platform_sdk[str(i)] = 0
@@ -957,6 +991,8 @@ class Category:
 
 		self.metrics = {}
 		self.set_total_metrics = False
+
+		self.dalvik_opcodes = []
 
 	def print(self, option = 1):
 		global verbose
@@ -992,13 +1028,13 @@ class Category:
 			elif option == 4:
 				print("metrics: " + str(self.metrics))
 			elif option == 5:
-				done_apps = [a for a in self.applications if a.is_differencer_done]
-				print(" +- Apps")
+				done_apps = [a for a in self.applications if a.is_resources_done]
+				print(" +- Apps (" + str(len(done_apps)) + ")")
 
 				for app in done_apps:
 					print("  - " + app.name)
 					versions = [v for v in app.versions if v.metrics]
-					for v in versions:
+					for v in app.versions:
 						print("   - " + v.version)
 
 
@@ -1050,12 +1086,11 @@ class Category:
 ###  Utilities
 ###
 
-def dalvik_opcodes_an_index_of(op):
-	global dalvik_opcodes_an
+def dalvik_opcodes_an_index_of(dalvik_op, op):
 
-	for i in range(len(dalvik_opcodes_an)):
+	for i in range(len(dalvik_op)):
 	#	print("if " + op + " in " + dalvik_opcodes[i].op_name)
-		if (op in dalvik_opcodes_an[i].op_name):
+		if (op in dalvik_op[i].op_name):
 			return i
 
 	return -1
@@ -1124,7 +1159,7 @@ def initialize_SDK_dict():
 	global minSDK
 	global targetSDK
 
-	for i in range(28):
+	for i in range(29):
 		minSDK[str(i)] = 0
 		targetSDK[str(i)] = 0
 
@@ -1249,7 +1284,8 @@ def get_dir_size(start_path = '.', ext = '*'):
 		for f in filenames:
 			if(ext == '*' or f.endswith(ext)):
 				fp = os.path.join(dirpath, f)
-				total_size += os.path.getsize(fp)
+				if os.path.exists(fp):
+					total_size += os.path.getsize(fp)
 	return total_size
 
 def run_apktool(path):
@@ -1290,62 +1326,125 @@ def load_obj(name, ext):
 		return pickle.load(f)
 
 def sdk_info_worksheet(workbook):
+	print("Generating SDK Summary")
 	worksheet = workbook.add_worksheet("SDK Summary")
 
 	worksheet.write(0, 0, 'Min SDK Version')
 	worksheet.write(1, 0, 'Category')
 
-	for i in range(1,28):
-		worksheet.write(1, i + 1, str(i))
+	for i in range(1,29):
+		worksheet.write(1, i, str(i))
 
 	cat_size = len(Categories)
-	for i in range(cat_size - 1):
+	for i in range(cat_size):
 		cat = Categories[i]
 		worksheet.write(i + 2, 0, cat.name)
 
-		for j in range(1,28):
-			worksheet.write(i + 2, j, cat.min_sdk[str(j)])
+		for j in range(1,29):
+			if str(j) in cat.min_sdk:
+				worksheet.write(i + 2, j, cat.min_sdk[str(j)])
+			else:
+				worksheet.write(i + 2, j, 0)
+			
 		i+=1
 
 	shift = cat_size + 4
 	worksheet.write(shift, 0, 'Target SDK Version')
 	worksheet.write(shift + 1, 0, 'Category')
 
-	for i in range(cat_size - 1):
+	for i in range(1,29):
+		worksheet.write(shift + 1,  i, str(i))
+
+	for i in range(cat_size):
 		cat = Categories[i]
 		index = i + shift
 		worksheet.write(index + 2, 0, cat.name)
 
-		for j in range(1,28):
-			worksheet.write(index + 2, j, cat.target_sdk[str(j)])
+		for j in range(1,29):
+			if str(j) in cat.target_sdk:
+				worksheet.write(index + 2, j, cat.target_sdk[str(j)])
+			else:
+				worksheet.write(index + 2, j, 0)
+
+
+	shift = shift +  cat_size + 4
+	worksheet.write(shift, 0, 'Platform Build SDK Version')
+	worksheet.write(shift + 1, 0, 'Category')
+
+	for i in range(1,29):
+		worksheet.write(shift + 1,  i, str(i))
+
+	for i in range(cat_size):
+		cat = Categories[i]
+		index = i + shift
+		worksheet.write(index + 2, 0, cat.name)
+
+		for j in range(1,29):
+
+			if str(j) in cat.platform_sdk:
+				worksheet.write(index + 2, j, cat.platform_sdk[str(j)])
+			else:
+				worksheet.write(index + 2, j, 0)
+			
 
 	return worksheet
 
 def op_code_worksheet(workbook):
+	global dalvik_opcodes
+	global dalvik_op_cat
+	print("Op Codes Summary")
 	worksheet = workbook.add_worksheet("Op codes Summary")
 
-	worksheet.write(0, 0, 'Op code')
-	worksheet.write(0, 1, 'Op Name')
-	worksheet.write(0, 2, 'Added')
-	worksheet.write(0, 3, 'Removed')
-	worksheet.write(0, 4, 'Explanation')
-	worksheet.write(0, 5, 'Example')
+	if os.path.exists('./' + pkl_dalvik_opcodes):
+		dalvik_opcodes = load_obj(pkl_dalvik_opcodes, ext)
+		
+	if(dalvik_opcodes):
+		if(len(dalvik_opcodes) == 0):
+			get_dalvik_table()
+	else:
+		get_dalvik_table()
 
-	i = 1
-	for op in dalvik_opcodes_an:
-		worksheet.write(i, 0, op.op_code)
-		worksheet.write(i, 1, op.op_name )
-		worksheet.write(i, 2, op.added)
-		worksheet.write(i, 3, op.removed)
-		worksheet.write(i, 4, op.explanation)
-		worksheet.write(i, 5, op.example)
+	start_col = 0
 
-		i+=1
+	for cat in Categories:
+
+		op_codes = []
+		for d in dalvik_opcodes:
+			op_codes.append(dalvik_opcode(d.op_code, d.op_name, d.explanation, d.example))
+
+		dalvik_op_cat[cat] = op_codes
+		cat.analize_dalvik()
+
+		worksheet.write(0, start_col + 0, 'Category')
+		worksheet.write(0, start_col + 1, 'Op code')
+		worksheet.write(0, start_col + 2, 'Op Name')
+		worksheet.write(0, start_col + 3, 'Added')
+		worksheet.write(0, start_col + 4, 'Removed')
+		#worksheet.write(0, start_col + 5, 'Explanation')
+		#worksheet.write(0, start_col + 6, 'Example')
+
+		i = 1
+		worksheet.write(i, start_col + 0, cat.name)
+		for op in dalvik_op_cat[cat]:
+
+			worksheet.write(i, start_col + 1, op.op_code)
+			worksheet.write(i, start_col + 2, op.op_name )
+			worksheet.write(i, start_col + 3, op.added)
+			worksheet.write(i, start_col + 4, op.removed)
+			#worksheet.write(i, start_col + 5, op.explanation)
+			#worksheet.write(i, start_col + 6, op.example)
+
+			i+=1
+
+		start_col += 6
+
+
 
 	return worksheet
 
 def category_app_summary(woorkbook):
-	worksheet = workbook.add_worksheet("Category App Summary")
+	print("Category App Summary")
+	worksheet = woorkbook.add_worksheet("Category App Summary")
 	worksheet.write(0, 0, 'Category')
 	worksheet.write(0, 1, 'Number of Applications')
 	worksheet.write(0, 2, 'Max Number of Versions')
@@ -1354,15 +1453,22 @@ def category_app_summary(woorkbook):
 	worksheet.write(0, 5, 'Min Release Date')
 	worksheet.write(0, 6, 'Max Release Date')
 
+	for cat in Categories:
+		cat.min_release_date = datetime.strptime('1999-01-01', "%Y-%m-%d")
+		cat.max_release_date = datetime.strptime('1999-01-01', "%Y-%m-%d")
+
 	row = 1
 	for cat in Categories:
-
 		total_versions = []
 
+		apps = []
 		for app in cat.applications:
 
 			versions = [v for v in app.versions if v.is_downloaded == True ]
 			total_versions.append(len(versions))
+
+			if(len(versions) > 0):
+				apps.append(app)
 
 			for v in versions:
 				v_date = v.get_date()
@@ -1371,7 +1477,9 @@ def category_app_summary(woorkbook):
 				if  v_date > cat.max_release_date:
 					cat.max_release_date = v_date
 
-		worksheet.write(row, 1, len(cat.applications))
+
+		worksheet.write(row, 0, cat.name)
+		worksheet.write(row, 1, len(apps))
 		worksheet.write(row, 2, max(total_versions))
 		worksheet.write(row, 3, min(total_versions))
 		worksheet.write(row, 4, round(sum(total_versions) / max(len(total_versions),1),2))
@@ -1383,10 +1491,16 @@ def category_app_summary(woorkbook):
 	
 
 def caregory_summary_worksheet(workbook):
+	print("Category Summary")
 	worksheet = workbook.add_worksheet("Category Summary")
 	worksheet.write(0, 0, 'Category')
 
+	bases = [""]
 	cat = Categories[0]
+	for b in bases:
+		if not cat.set_total_metrics or not cat.metrics:
+			for k in filter(lambda x: type(next_version.metrics[x]) != set and x.startswith(b), next_version.metrics.keys()):
+					print(k + " ")
 
 
 	i = 1
@@ -1403,12 +1517,12 @@ def caregory_summary_worksheet(workbook):
 	for cat in Categories:
 		worksheet.write(rows, 0, cat.name)
 		i = 1
-		for k in filter(lambda x: type(metrics[x]) != set and x.startswith(b), metrics.keys()):
-			worksheet.write(0, i, sum(cat.metrics[k])) #TOTAL
-			worksheet.write(0, i + 1, min(cat.metrics[k])) #MIN
-			worksheet.write(0, i + 2, max(cat.metrics[k])) #MAX
-			worksheet.write(0, i + 3, round(sum(cat.metrics[k]) / max(len(cat.metrics[k]),1),2)) #AVG
-			worksheet.write(0, i + 4, statistics.median(cat.metrics[k])) #MEDIAN
+		for k in filter(lambda x: type(cat.metrics[x]) != set and x.startswith(b), cat.metrics.keys()):
+			worksheet.write(rows, i, sum(cat.metrics[k])) #TOTAL
+			worksheet.write(rows, i + 1, min(cat.metrics[k])) #MIN
+			worksheet.write(rows, i + 2, max(cat.metrics[k])) #MAX
+			worksheet.write(rows, i + 3, round(sum(cat.metrics[k]) / max(len(cat.metrics[k]),1),2)) #AVG
+			worksheet.write(rows, i + 4, statistics.median(cat.metrics[k])) #MEDIAN
 			i += 5
 		rows += 1
 
@@ -1417,6 +1531,7 @@ def caregory_summary_worksheet(workbook):
 
 
 def apk_worksheet(workbook):
+	print("APK Summary")
 	worksheet = workbook.add_worksheet("APK Summary")
 	worksheet.write(0, 0, 'Category')
 	worksheet.write(0, 1, 'Max Apk Size')
@@ -1467,6 +1582,7 @@ def apk_worksheet(workbook):
 	return worksheet
 
 def resources_worksheet(workbook):
+	print("Resources Summary")
 	worksheet = workbook.add_worksheet("Resources Summary")
 	worksheet.write(0, 0, 'Category')
 	worksheet.write(0, 1, 'Layout Addition')
@@ -1510,35 +1626,83 @@ def resources_worksheet(workbook):
 
 
 		worksheet.write(row, 0, cat.name)
-		worksheet.write(row, 1, cat.res_layout_addition)
-		worksheet.write(row, 2, cat.res_layout_removal)
-		worksheet.write(row, 3, cat.res_layout_changes)
-		worksheet.write(row, 4, cat.res_orientation_support)
-		worksheet.write(row, 5, cat.res_direction_support)
-		worksheet.write(row, 6, cat.res_size_support)
-		worksheet.write(row, 7, cat.res_dpi_support)
-		worksheet.write(row, 8, cat.res_platform_support)
-		worksheet.write(row, 9, cat.res_rem_orientation_support)
-		worksheet.write(row, 10, cat.res_rem_direction_support)
-		worksheet.write(row, 12, cat.res_rem_size_support)
-		worksheet.write(row, 13, cat.res_rem_dpi_support)
-		worksheet.write(row, 14, cat.res_rem_platform_support)
+		worksheet.write(row, 1, sum(cat.res_layout_addition))
+		worksheet.write(row, 2, sum(cat.res_layout_removal))
+		worksheet.write(row, 3, sum(cat.res_layout_changes))
+		worksheet.write(row, 4, sum(cat.res_orientation_support))
+		worksheet.write(row, 5, sum(cat.res_direction_support))
+		worksheet.write(row, 6, sum(cat.res_size_support))
+		worksheet.write(row, 7, sum(cat.res_dpi_support))
+		worksheet.write(row, 8, sum(cat.res_platform_support))
+		worksheet.write(row, 9, sum(cat.res_rem_orientation_support))
+		worksheet.write(row, 10, sum(cat.res_rem_direction_support))
+		worksheet.write(row, 12, sum(cat.res_rem_size_support))
+		worksheet.write(row, 13, sum(cat.res_rem_dpi_support))
+		worksheet.write(row, 14, sum(cat.res_rem_platform_support))
 
 		row += 1 
 
 	return worksheet
 
 def export_to_excel():
+	print("Export to excel")
+
+	global verbose
+	global Categories
+
+	exclusion_folders = ['Summary','exclusionlist'
+	,'PRODUCTIVITY', 'EDUCATION', 'COMMUNICATION', 
+	'Summaries_bkp']
+
+	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI)) and not dI in exclusion_folders]
+
+	for cat in cat_folders:
+		if verbose:
+			print("Analizing " + cat)
+
+		if(os.path.exists("./" + cat + ext)):
+			print("Loading " + cat)
+			category = load_obj("./" + cat,ext)
+			Categories.append(category)
+			
 
 	workbook = xlsxwriter.Workbook(os.path.join('.', 'final_report.xlsx'))
 	sdk_info_worksheet(workbook)
-	op_code_worksheet(woorkbook)
-	caregory_summary_worksheet(woorkbook)
-	apk_worksheet(woorkbook)
-	resources_worksheet(woorkbook)
-	category_app_summary(woorkbook)
+	op_code_worksheet(workbook)
+	caregory_summary_worksheet(workbook)
+	apk_worksheet(workbook)
+	resources_worksheet(workbook)
+	category_app_summary(workbook)
 
 	workbook.close()
+
+def backup():
+	print("Backup")
+
+	exclusion_folders = ['Summary','exclusionlist'
+	#,'PRODUCTIVITY', 'EDUCATION', 'COMMUNICATION', 'BUSINESS','TOOLS','FINANCE' 
+	'Summaries_bkp']
+
+	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI)) and not dI in exclusion_folders]
+
+	for cat in cat_folders:
+		print("Analizing " + cat)
+		cat_path = os.path.join(".", cat)
+		apps_folders = [dI for dI in os.listdir(cat_path) if os.path.isdir(os.path.join(cat_path,dI)) ]
+
+		for app in apps_folders:
+
+			app_path = os.path.join(cat_path, app)
+			res_folders = [dI for dI in os.listdir(app_path) if os.path.isdir(os.path.join(app_path,dI)) and dI.endswith("_apktool")]
+
+			for res in res_folders:
+				res_path = os.path.join(app_path, res)
+				bkp = "'/Volumes/LACIE SHARE/Personal/Documents/NJIT/Fall 2018/CS 673" + res_path.replace('./','/') + "'"
+				command = "mv -r '" + res_path + "' " + bkp
+				print(command)
+				os.system(command)
+
+
 
 
 def print_categories():
@@ -1621,6 +1785,11 @@ if __name__ == '__main__':
 
 	#Report
 	parser.add_argument('--generate-report', '-generate_report', action='store_true',
+                    help='Generate excel report')
+
+	#backup
+
+	parser.add_argument('--backup', '-backup', action='store_true',
                     help='Generate excel report')
 
 	args = parser.parse_args()
@@ -1706,6 +1875,10 @@ if __name__ == '__main__':
 
 		for cat in Categories:
 			cat.analize_dalvik()
+
+	elif args.backup:
+		backup()
+
 
 
 	
