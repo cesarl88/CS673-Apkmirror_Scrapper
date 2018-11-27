@@ -1037,7 +1037,7 @@ class Category:
 					versions = [v for v in app.versions if v.metrics]
 					for v in app.versions:
 						print("   - " + v.version)
-						print("   - " + v.metrics)
+						print("   - " + str(v.metrics))
 
 
 
