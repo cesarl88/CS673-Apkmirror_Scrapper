@@ -1028,14 +1028,15 @@ class Category:
 			elif option == 4:
 				print("metrics: " + str(self.metrics))
 			elif option == 5:
-				done_apps = [a for a in self.applications if a.is_resources_done]
-				print(" +- Apps (" + str(len(done_apps)) + ")")
+				done_apps_r = [a for a in self.applications if a.is_resources_done]
+				done_apps_m = [a for a in self.applications if a.is_resources_done]
+				print(" +- Apps resources done(" + str(len(done_apps_r)) + "),  metrics done(" + str(len(done_apps_m)) + ")")
 
-				for app in done_apps:
-					print("  - " + app.name)
-					versions = [v for v in app.versions if v.metrics]
-					for v in app.versions:
-						print("   - " + v.version)
+				#for app in done_apps:
+				#	print("  - " + app.name)
+				#	versions = [v for v in app.versions if v.metrics]
+				#	for v in app.versions:
+				#		print("   - " + v.version)
 
 
 
