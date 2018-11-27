@@ -530,7 +530,7 @@ class Application:
 
 
 	def analize_differences(self):
-		size = len(self.versions)
+		size = len(self.versions) - 1
 
 
 		for i in range(size, 0, -1):
@@ -702,7 +702,7 @@ class Application:
 		self.category.print(4)
 
 	def extract_apks(self):
-		for i in range(len(self.versions), 0, -1):
+		for i in range(len(self.versions) - 1, 0, -1):
 			v = self.versions[i]
 			if not v.extract_resources():
 				continue
@@ -728,7 +728,7 @@ class Application:
 		print("extracting apk content")
 		self.extract_apks()
 
-		for i in range(len(self.versions), 0, -1):
+		for i in range(len(self.versions) - 1, 0, -1):
 			
 
 			version = self.versions[i]
@@ -901,7 +901,7 @@ class Application:
 		androidVersions = []
 
 
-		for i in range(len(self.versions)):
+		for i in range(len(self.versions) - 1):
 			next_i = (i + 1) % len(self.versions)
 
 			v0 = self.versions[i]
@@ -1088,7 +1088,7 @@ class Category:
 
 def dalvik_opcodes_an_index_of(dalvik_op, op):
 
-	for i in range(len(dalvik_op)):
+	for i in range(len(dalvik_op) - 1):
 	#	print("if " + op + " in " + dalvik_opcodes[i].op_name)
 		if (op in dalvik_op[i].op_name):
 			return i
@@ -1335,7 +1335,7 @@ def sdk_info_worksheet(workbook):
 	for i in range(1,29):
 		worksheet.write(1, i, str(i))
 
-	cat_size = len(Categories)
+	cat_size = len(Categories) - 1
 	for i in range(cat_size):
 		cat = Categories[i]
 		worksheet.write(i + 2, 0, cat.name)
@@ -1651,7 +1651,7 @@ def export_to_excel():
 	global Categories
 
 	exclusion_folders = ['Summary','exclusionlist'
-	,'PRODUCTIVITY', 'EDUCATION', 'COMMUNICATION', 
+	#,'PRODUCTIVITY', 'EDUCATION', 'COMMUNICATION', 
 	'Summaries_bkp']
 
 	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI)) and not dI in exclusion_folders]
@@ -1698,9 +1698,9 @@ def backup():
 			for res in res_folders:
 				res_path = os.path.join(app_path, res)
 				bkp = "'/Volumes/LACIE SHARE/Personal/Documents/NJIT/Fall 2018/CS 673" + res_path.replace('./','/') + "'"
-				command = "mv -r '" + res_path + "' " + bkp
+				command = "cp - '" + res_path + "' " + bkp
 				print(command)
-				os.system(command)
+				#os.system(command)
 
 
 
