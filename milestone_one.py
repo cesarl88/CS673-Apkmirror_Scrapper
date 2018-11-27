@@ -1029,7 +1029,7 @@ class Category:
 				print("metrics: " + str(self.metrics))
 			elif option == 5:
 				done_apps_r = [a for a in self.applications if a.is_resources_done]
-				done_apps_m = [a for a in self.applications if a.is_resources_done]
+				done_apps_m = [a for a in self.applications if a.is_differencer_done]
 				print(" +- Apps resources done(" + str(len(done_apps_r)) + "),  metrics done(" + str(len(done_apps_m)) + ")")
 
 				#for app in done_apps:
