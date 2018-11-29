@@ -132,6 +132,10 @@ class AppVersion:
 	def get_apk_dir(self):
 		return os.path.join(self.application.get_path(), _removeNonAscii(self.version).replace(".", "_").replace(" ","_") + "_apktool")
 
+
+	def get_unzip_apk_dir(self):
+		return os.path.join(self.application.get_path(), _removeNonAscii(self.version).replace(".", "_").replace(" ","_") + "_unzip")
+
 	def get_date(self):
 		try:
 			return datetime.strptime(self.date, '%Y-%m-%d')
@@ -180,6 +184,20 @@ class AppVersion:
 		self.application.category.res_sizes.append(self.res_size)
 		self.application.category.lib_sizes.append(self.lib_size)
 		self.application.category.smali_sizes.append(self.smali_size)
+
+
+	def check_apk_size_lib_dex(self):
+		self.dex_size = get_dir_size(self.get_unzip_apk_dir(), '.dex')
+		lib_path = self.get_unzip_apk_dir() + '/lib'
+		if(os.path.exists(lib_path)):
+			self.lib_size = get_dir_size(lib_path)
+
+		self.apk_size += self.dex_size
+		self.apk_size += self.lib_size
+
+		#self.application.category.apk_sizes.append(self.apk_size)
+		#self.application.category.dex_sizes.append(self.dex_size)
+		#self.application.category.lib_sizes.append(self.lib_size)
 
 	def get_SDK_info(self):
 		
@@ -281,6 +299,46 @@ class AppVersion:
 			# 	os.path.rmdir(res_path)
 			# 	return run_apktool(path)
 			return True
+
+	def unzip_resources(self):
+		#global regenerate_res
+		
+		res_path = self.get_apk_dir()
+		print("exists: "+ res_path)
+		if(not os.path.exists(res_path)):
+			path = self.get_apk_path()
+			print("Checking " + path)
+			return unzip_folder(path)
+		else: 
+			# if(regenerate_res):
+			# 	os.path.rmdir(res_path)
+			# 	return run_apktool(path)
+			return True
+
+	def delete_resources(self):
+		res_path = self.get_apk_dir()
+		fileDir = os.path.dirname(os.path.abspath(__file__))
+		path = os.path.join(fileDir, res_path.replace('./', ''))
+		outpath = os.path.join(fileDir, path.replace('.apk', '_apktool'))
+		
+		if os.path.exists(outpath):
+			shutil.rmtree(outpath)
+
+	def remove_apk_folder(self):
+		res_path = self.get_old_apk_dir()
+		if os.path.exists(res_path):
+			if verbose:
+				print("Removing (" + res_path + ")" )
+			shutil.rmtree(res_path)
+
+	def delete_resources_unzip(self):
+		res_path = self.get_apk_dir()
+		fileDir = os.path.dirname(os.path.abspath(__file__))
+		path = os.path.join(fileDir, res_path.replace('./', ''))
+		outpath = os.path.join(fileDir, path.replace('.apk', '_unzip'))
+		
+		if os.path.exists(outpath):
+			shutil.rmtree(outpath)
 
 	def remove_apk_folder(self):
 		res_path = self.get_old_apk_dir()
@@ -701,6 +759,8 @@ class Application:
 			# csv_file += '\n'
 		self.category.print(4)
 
+	
+
 	def extract_apks(self):
 		for i in range(len(self.versions) - 1, 0, -1):
 			v = self.versions[i]
@@ -713,10 +773,42 @@ class Application:
 			#print_categories()
 			#sys.exit(0)
 
+	def get_dex_lib_info(self):
+
+		#self.category.lib_sizes = []
+		#self.category.dex_sizes = []
+
+		for i in range(len(self.versions) - 1, 0, -1):
+			v = self.versions[i]
+			if not v.unzip_resources():
+				continue
+			# Check APK size composition
+			v.check_apk_size_lib_dex()
+			#v.get_SDK_info()
+
+		self.remove_resources_unzip()
+
+
+	def remove_resources(self):
+
+		for v in self.versions:
+			v.delete_resources()
+
+
+	def remove_resources_unzip(self):
+
+		for v in self.versions:
+			v.delete_resources_unzip()
+
 
 	def remove_apk_folder(self):
 		for v in self.versions:
 			v.remove_apk_folder();
+
+	def clear_resources_com():
+		for v in self.versions:
+			v.is_resources_done = False;
+
 
 	def process_resources(self):
 		
@@ -769,9 +861,10 @@ class Application:
 			#self.is_resources_done = True
 			#save_obj(self.category, self.category.name, ext)
 		self.category.print(1)
-		self .category.print(2)	
-		self .category.print(4)
+		self.category.print(2)	
+		self.category.print(4)
 
+		self.remove_resources()
 
 				
 
@@ -1032,18 +1125,20 @@ class Category:
 				done_apps_m = [a for a in self.applications if a.is_differencer_done]
 				print(" +- Apps resources done(" + str(len(done_apps_r)) + "),  metrics done(" + str(len(done_apps_m)) + ")")
 
-				for app in done_apps_m:
-					print("  - " + app.name)
-					versions = [v for v in app.versions if v.metrics]
-					for v in app.versions:
-						print("   - " + v.version)
-						print("   - " + str(v.metrics))
+				#for app in done_apps_m:
+				#	print("  - " + app.name)
+				#	versions = [v for v in app.versions if v.metrics]
+				#	for v in app.versions:
+				#		print("   - " + v.version + " => " +str(v.isObfuscated))
+				#		print("   - " + str(v.metrics))
 
 
 
 	def run_dissasemble(self):
 
+		print(self.applications)
 		for app in self.applications:
+			print("app: " + app.name)
 			for v in app.versions:
 				if not v.is_downloaded:
 					continue
@@ -1072,6 +1167,16 @@ class Category:
 			app.is_resources_done = True
 			save_obj(self, self.name, ext)
 			#sys.exit(0)
+
+	def get_dex_lib_info(self):
+
+		for app in self.applications:
+			
+			if len([v for v in app.versions if v.is_downloaded]) == 0 or not app.is_resources_done:
+				continue
+
+			app.get_dex_lib_info()
+			save_obj(self, self.name, ext)
 
 	def analize_dalvik(self):
 		for app in self.applications:
@@ -1314,6 +1419,31 @@ def run_apktool(path):
 		print("Error on apktool d " + path)
 		return False
 		
+#unzip file.zip -d ~/another/folder
+def unzip_folder(path):
+	global verbose
+
+	fileDir = os.path.dirname(os.path.abspath(__file__))
+	path = os.path.join(fileDir, path.replace('./', ''))
+	outpath = os.path.join(fileDir, path.replace('.apk', '_unzip'))
+	if not os.path.exists(path):
+		print(path + " not found")
+		return False
+
+	if os.path.exists(outpath):
+		return True
+	try:
+		Command = "unzip '" + path + "' -d '" + outpath + "'"
+		if verbose:
+			print(Command)
+		os.system(Command)
+
+		return os.path.exists(outpath)
+	except Exception as e:
+		print(e)
+		print("Error unzip '" + path + "' -d '" + outpath + "'")
+		return False
+
 
 def save_obj(obj, name, ext):
     with open('./'+ name + ext, 'wb') as f:
@@ -1337,7 +1467,7 @@ def sdk_info_worksheet(workbook):
 	for i in range(1,29):
 		worksheet.write(1, i, str(i))
 
-	cat_size = len(Categories) - 1
+	cat_size = len(Categories)
 	for i in range(cat_size):
 		cat = Categories[i]
 		worksheet.write(i + 2, 0, cat.name)
@@ -1410,6 +1540,7 @@ def op_code_worksheet(workbook):
 
 	for cat in Categories:
 
+		print("Category("+cat.name+")")
 		op_codes = []
 		for d in dalvik_opcodes:
 			op_codes.append(dalvik_opcode(d.op_code, d.op_name, d.explanation, d.example))
@@ -1456,7 +1587,7 @@ def category_app_summary(woorkbook):
 	worksheet.write(0, 6, 'Max Release Date')
 
 	for cat in Categories:
-		cat.min_release_date = datetime.strptime('1999-01-01', "%Y-%m-%d")
+		cat.min_release_date = datetime.strptime('2020-01-01', "%Y-%m-%d")
 		cat.max_release_date = datetime.strptime('1999-01-01', "%Y-%m-%d")
 
 	row = 1
@@ -1467,10 +1598,11 @@ def category_app_summary(woorkbook):
 		for app in cat.applications:
 
 			versions = [v for v in app.versions if v.is_downloaded == True ]
-			total_versions.append(len(versions))
+			
 
 			if(len(versions) > 0):
 				apps.append(app)
+				total_versions.append(len(versions))
 
 			for v in versions:
 				v_date = v.get_date()
@@ -1479,6 +1611,8 @@ def category_app_summary(woorkbook):
 				if  v_date > cat.max_release_date:
 					cat.max_release_date = v_date
 
+		if(len(apps) == 0):
+			continue
 
 		worksheet.write(row, 0, cat.name)
 		worksheet.write(row, 1, len(apps))
@@ -1558,6 +1692,25 @@ def apk_worksheet(workbook):
 	worksheet.write(0, 20, 'Median Smali Size')
 	rows = 1
 	for cat in Categories:
+		cat.apk_sizes = []
+		cat.lib_sizes = []
+		cat.dex_sizes = []
+		cat.smali_sizes = []
+		cat.res_sizes = []
+
+		applications = [a for a in cat.applications if a.is_resources_done]
+		for app in applications:
+
+			for v in app.versions:
+				cat.apk_sizes.append(v.apk_size)
+				cat.lib_sizes.append(v.lib_size)
+				cat.dex_sizes.append(v.dex_size)
+				cat.smali_sizes.append(v.smali_size)
+				cat.res_sizes.append(v.res_size)
+
+		if(len(cat.apk_sizes) == 0):
+			continue
+
 		worksheet.write(rows, 0, cat.name)
 		worksheet.write(rows, 1, max(cat.apk_sizes))
 		worksheet.write(rows, 2, min(cat.apk_sizes))
@@ -1653,7 +1806,7 @@ def export_to_excel():
 	global Categories
 
 	exclusion_folders = ['Summary','exclusionlist'
-	#,'PRODUCTIVITY', 'EDUCATION', 'COMMUNICATION', 
+	#,'PRODUCTIVITY', 'EDUCATION', 'COMMUNICATION',  		 
 	'Summaries_bkp']
 
 	cat_folders = [dI for dI in os.listdir("./") if os.path.isdir(os.path.join("./",dI)) and not dI in exclusion_folders]
@@ -1785,6 +1938,10 @@ if __name__ == '__main__':
 	parser.add_argument('--compare-resources', '-compare_resources', action='store_true',
                     help='Compare resources')
 
+	#parser.add_argument('--get-dex-lib_info', '-get_dex_lib_info', action='store_true',
+     #               help='Get dex and lib info')
+
+
 	#Report
 	parser.add_argument('--generate-report', '-generate_report', action='store_true',
                     help='Generate excel report')
@@ -1834,6 +1991,10 @@ if __name__ == '__main__':
 		cat = load_obj(category_pkl,ext)
 		#for cat in Categories:
 		cat.compare_resources()
+	#elif args.get_dex_lib_info:
+	#	cat = load_obj(category_pkl,ext)
+		#for cat in Categories:
+	#	cat.get_dex_lib_info()
 	#excel report
 	elif args.generate_report:
 		export_to_excel()
