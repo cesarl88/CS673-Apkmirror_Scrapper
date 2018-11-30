@@ -1635,7 +1635,7 @@ def caregory_summary_worksheet(workbook):
 	cat = Categories[0]
 	for b in bases:
 		if not cat.set_total_metrics or not cat.metrics:
-			for k in filter(lambda x: type(next_version.metrics[x]) != set and x.startswith(b), next_version.metrics.keys()):
+			for k in filter(lambda x: type(cat.metrics[x]) != set and x.startswith(b), cat.metrics.keys()):
 					print(k + " ")
 
 
