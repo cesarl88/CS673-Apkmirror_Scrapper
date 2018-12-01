@@ -805,9 +805,23 @@ class Application:
 		for v in self.versions:
 			v.remove_apk_folder();
 
-	def clear_resources_com():
+	def clear_resources():
 		for v in self.versions:
 			v.is_resources_done = False;
+			v.res_layout_addition = 0
+			v.res_layout_changes = 0
+			v.res_orientation_support = 0
+			v.res_direction_support = 0
+			v.res_size_support = 0
+			v.res_dpi_support = 0
+			v.res_platform_support = 0
+
+			v.res_layout_removal= 0
+			v.res_rem_orientation_support = 0
+			v.res_rem_direction_support = 0
+			v.res_rem_size_support = 0
+			v.res_rem_dpi_support = 0
+			v.res_rem_platform_support = 0
 
 
 	def process_resources(self):
@@ -1125,12 +1139,12 @@ class Category:
 				done_apps_m = [a for a in self.applications if a.is_differencer_done]
 				print(" +- Apps resources done(" + str(len(done_apps_r)) + "),  metrics done(" + str(len(done_apps_m)) + ")")
 
-				#for app in done_apps_m:
-				#	print("  - " + app.name)
-				#	versions = [v for v in app.versions if v.metrics]
-				#	for v in app.versions:
-				#		print("   - " + v.version + " => " +str(v.isObfuscated))
-				#		print("   - " + str(v.metrics))
+				for app in done_apps_m:
+					print("  - " + app.name)
+					versions = [v for v in app.versions if v.metrics]
+					for v in app.versions:
+						print("   - " + v.version + " => " +str(v.isObfuscated))
+						print("   - " + str(v.metrics))
 
 
 
@@ -1189,6 +1203,14 @@ class Category:
 				return app
 
 		return None		
+
+	def clear_resources(self):
+		for app in self.applications:
+			app.clear_resources_com();
+
+
+		save_obj(self, self.name, ext)
+
 ###
 ###  Utilities
 ###
@@ -1938,6 +1960,10 @@ if __name__ == '__main__':
 	parser.add_argument('--compare-resources', '-compare_resources', action='store_true',
                     help='Compare resources')
 
+
+	parser.add_argument('--clear-resources', '-clear_resources', action='store_true',
+                    help='Clear Resources')
+
 	#parser.add_argument('--get-dex-lib_info', '-get_dex_lib_info', action='store_true',
      #               help='Get dex and lib info')
 
@@ -1996,6 +2022,10 @@ if __name__ == '__main__':
 		#for cat in Categories:
 	#	cat.get_dex_lib_info()
 	#excel report
+	elif args.clear_resources:
+		cat = load_obj(category_pkl,ext)
+		cat.clear_resources()
+
 	elif args.generate_report:
 		export_to_excel()
 	#Dalvik Analisys
