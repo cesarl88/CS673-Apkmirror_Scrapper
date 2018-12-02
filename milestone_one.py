@@ -805,9 +805,9 @@ class Application:
 		for v in self.versions:
 			v.remove_apk_folder();
 
-	def clear_resources():
+	def clear_resources(self):
+		self.is_resources_done = False;
 		for v in self.versions:
-			v.is_resources_done = False;
 			v.res_layout_addition = 0
 			v.res_layout_changes = 0
 			v.res_orientation_support = 0
@@ -1139,12 +1139,14 @@ class Category:
 				done_apps_m = [a for a in self.applications if a.is_differencer_done]
 				print(" +- Apps resources done(" + str(len(done_apps_r)) + "),  metrics done(" + str(len(done_apps_m)) + ")")
 
-				for app in done_apps_m:
+				for app in done_apps_r:
 					print("  - " + app.name)
-					versions = [v for v in app.versions if v.metrics]
+					#versions = [v for v in app.versions if v.metrics]
 					for v in app.versions:
-						print("   - " + v.version + " => " +str(v.isObfuscated))
-						print("   - " + str(v.metrics))
+						print("version: " + v.version)
+						#print(" - res_layout_addition: ", self.res_layout_addition)
+						#print(" - res_layout_changes: ", self.res_layout_changes)
+						#print(" - res_orientation_support: ", self.res_orientation_support)
 
 
 
@@ -1206,7 +1208,7 @@ class Category:
 
 	def clear_resources(self):
 		for app in self.applications:
-			app.clear_resources_com();
+			app.clear_resources();
 
 
 		save_obj(self, self.name, ext)
