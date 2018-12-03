@@ -1177,7 +1177,7 @@ class Category:
 	def clear_differences(self):
 		for app in self.applications:
 			
-			if len([v for v in app.versions if v.is_downloaded]) == 0 or app.is_differencer_done:
+			if len([v for v in app.versions if v.is_downloaded]) == 0:
 				continue
 
 			app.clear_differences()
