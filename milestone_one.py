@@ -759,7 +759,10 @@ class Application:
 			# csv_file += '\n'
 		self.category.print(4)
 
-	
+	def clear_differences(self):
+		self.is_differencer_done = False
+		for v in self.versions:
+			v.metrics = {}
 
 	def extract_apks(self):
 		for i in range(len(self.versions) - 1, 0, -1):
@@ -1169,6 +1172,16 @@ class Category:
 				continue
 			app.analize_differences()
 			app.is_differencer_done = True
+			save_obj(self, self.name, ext)
+
+	def clear_differences(self):
+		for app in self.applications:
+			
+			if len([v for v in app.versions if v.is_downloaded]) == 0 or app.is_differencer_done:
+				continue
+
+			app.clear_differences()
+			app.is_resources_done = False
 			save_obj(self, self.name, ext)
 
 
@@ -1957,6 +1970,9 @@ if __name__ == '__main__':
 	parser.add_argument('--run-differencer', '-run_differencer', action='store_true',
                     help='Run differencer')
 
+	parser.add_argument('--clear-differences', '-clear_differences', action='store_true',
+                    help='Clear Diffrences')
+
 
 	#Resources
 	parser.add_argument('--compare-resources', '-compare_resources', action='store_true',
@@ -2014,6 +2030,11 @@ if __name__ == '__main__':
 		cat = load_obj(category_pkl,ext)
 		#for cat in Categories:
 		cat.run_differencer()
+
+	elif args.clear_differences:
+		cat = load_obj(category_pkl,ext)
+		#for cat in Categories:
+		cat.clear_differences()
 	#resources
 	elif args.compare_resources:
 		cat = load_obj(category_pkl,ext)
